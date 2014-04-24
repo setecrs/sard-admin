@@ -14,7 +14,7 @@ def main(*dirs):
         new={}
         paths=[]
         print d
-        for s in ['','pericia/','pericia/imagem/']:
+        for s in ['','*/','*/*/']:
             cmd='ls %s/*/%simagem.* 2>/dev/null'%(d,s)
             paths+=os.popen(cmd).read().split('\n')
         paths=[x for x in paths if x]
