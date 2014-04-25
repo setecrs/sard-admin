@@ -16,7 +16,7 @@ def main(path,storage=None):
                 def functocall(outdirtemp):
                     print '##################################'
                     command("date",False)
-                    return command("time tsk_recover -a -o %i '%s' '%s' 3>&1 1>&2 2>&3 | grep 'Processing MFT' | tr '\n' '\r' " %(part['offset']/512,part['path'],outdirtemp))
+                    return command("time tsk_recover -v -a -o %i '%s' '%s' 3>&1 1>&2 2>&3 | grep 'Processing MFT' | tr '\\n' '\\r' " %(part['offset']/512,part['path'],outdirtemp))
                 executeintemp(outdir,functocall)
 
 main(*sys.argv[1:])
