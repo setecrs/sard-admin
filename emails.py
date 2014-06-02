@@ -19,6 +19,7 @@ def main(path,storage=None):
                 def functocall(outdirtemp):
                     dirmbox=outdirtemp+'-mbox'
                     dirmdir=outdirtemp
+                    dirmdir=dirmdir.replace('/','\',1)
                     print '##################################'
                     command("date",False)
                     extracao_emails.main(mnt,dirmbox,dirmdir)
