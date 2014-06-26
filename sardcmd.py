@@ -7,8 +7,6 @@ import tempfile
 import datetime
 import random
 from sardutils import *
-sys.path.insert(0,'/git/email')
-import extracao_emails
 
 all_storages='vmhost1 vmhost2 vmhost3 storage1 backup1'.split()
 
