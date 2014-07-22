@@ -31,7 +31,7 @@ def executeintemp(destdir,functocall,skipexisting=True,interactive=True):
         os.mkdir(tempdir,0755)
         ret=functocall(tempdir)
         if interactive and ret!=0:
-            print 'Erro. Comando retornou',ret
+            print 'Erro. Comando retornou:',ret
             if not ask('Deseja continuar?'):
                 sys.exit(ret)
         else:
