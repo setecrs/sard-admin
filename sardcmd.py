@@ -27,13 +27,13 @@ class Usuario:
         indices=''
         command('mkdir -p /home/%s/.maildir/operacoes'%u)
         command('echo > /home/%s/.maildir/operacoes/subscriptions'%u)
+        command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u)
         for g in self.listgroups():
             print "%s\t%s"%(u,g)
+            command('ln -snf /sard/extracao/%s /home/%s/Desktop/operacoes/%s'%(g,u,g))
             if os.path.isdir('/sard/extracao/'+g):
                 if not os.path.exists('/home/%s/ThunderbirdPortable'%u):
-                    usuario_zerarthunderbird.main(u)
-                command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u)
-                command('ln -snf /sard/extracao/%s /home/%s/Desktop/operacoes/%s'%(g,u,g))
+                    self.zerar_thunderbird()
                 if os.path.exists('/storage1/mnt/config/subscriptions/%s.subscriptions'%g):
                     command('cat /storage1/mnt/config/subscriptions/%s.subscriptions >> /home/%s/.maildir/operacoes/subscriptions'%(g,u))
         self.permissoes()
