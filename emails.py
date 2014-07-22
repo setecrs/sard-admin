@@ -19,12 +19,10 @@ def main(path,storage=None):
                 def functocall(outdirtemp):
                     dirmbox=outdirtemp+'-mbox'
                     dirmdir=outdirtemp
-                    dirmdir=dirmdir.replace('/','\',1)
                     print '##################################'
                     command("date",False)
-                    extracao_emails.main(mnt,dirmbox,dirmdir)
-                    retiraacentos.retiraacentosdir(dirmdir)
-                    return
+                    extracao_emails.main(indir,dirmbox,dirmdir)
+                    return 0
                 executeintemp(outdir,functocall)
 
 main(*sys.argv[1:])
