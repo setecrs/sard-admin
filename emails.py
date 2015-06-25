@@ -25,4 +25,5 @@ def main(path,storage=None):
                     return 0
                 executeintemp(outdir,functocall)
 
-main(*sys.argv[1:])
+for x in sys.argv[1:]:
+    main(x)
