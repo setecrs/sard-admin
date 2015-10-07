@@ -12,8 +12,9 @@ from sardutils import *
 all_storages='storage1 storage2 backup1'.split()
 
 class Usuario:
-    def __init__(self,name):
+    def __init__(self,name,args=None):
         self.name=name
+        self.args=args
     def listgroups(self):
         return os.popen('groups '+self.name).read().rstrip('\n').split(' ')[2:]
     def criacao(self):
@@ -22,6 +23,7 @@ class Usuario:
         print 'Sugestao de senha', random.randint(100000,999999)
         command('smbldap-useradd -a -g "%s" -P -s /bin/false -m  "%s"'%((u,)*2))
         command('smbldap-usermod --shadowMax 3650 "%s"'%u)
+        self.grupo('Domain_Users')
         self.preenchimento()
     def preenchimento(self):
         u=self.name
@@ -82,6 +84,12 @@ use redirection server name:i:0
 username:s:SARD\%s
 """%u)
         self.permissoes()
+    def grupo(self,grupo=None):
+        u=self.name
+        if grupo==None:
+            grupo = self.args['GRUPO']
+        command('smbldap-groupmod -m %s %s'%(u,grupo))
+        command('sss_cache -U -G')
     def permissoes(self):
         command('chmod o-rwx -R /home/"%s" '%self.name)
         command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3))
@@ -148,12 +156,13 @@ Usage:
         usuario listgroups USUARIO
         usuario zerar_thunderbird USUARIO
         usuario zerar_senha USUARIO
+        usuario grupo USUARIO GRUPO
 
 """
         try:
             args=docopt.docopt(self.do_usuario.__doc__,line.split(),help=False)
-            usuario=Usuario(args['USUARIO'])
-            for x in 'criacao preenchimento permissoes listgroups zerar_thunderbird zerar_senha'.split():
+            usuario=Usuario(args['USUARIO'],args)
+            for x in 'criacao preenchimento permissoes listgroups zerar_thunderbird zerar_senha grupo'.split():
                 if args[x]:
                     print Usuario.__dict__[x](usuario)
         except (docopt.DocoptExit) as e:
