@@ -90,6 +90,7 @@ username:s:SARD\%s
             grupo = self.args['GRUPO']
         command('smbldap-groupmod -m %s %s'%(u,grupo))
         command('sss_cache -U -G')
+	self.preenchimento()
     def permissoes(self):
         command('chmod o-rwx -R /home/"%s" '%self.name)
         command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3))
