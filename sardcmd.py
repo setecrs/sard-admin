@@ -28,17 +28,10 @@ class Usuario:
     def preenchimento(self):
         u=self.name
         indices=''
-        command('mkdir -p /home/%s/.maildir/operacoes'%u)
-        command('echo > /home/%s/.maildir/operacoes/subscriptions'%u)
         command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u)
         for g in self.listgroups():
             print "%s\t%s"%(u,g)
             command('ln -snf /sard/extracao/%s /home/%s/Desktop/operacoes/%s'%(g,u,g))
-            if os.path.isdir('/sard/extracao/'+g):
-                if not os.path.exists('/home/%s/ThunderbirdPortable'%u):
-                    self.zerar_thunderbird()
-                if os.path.exists('/storage1/mnt/config/subscriptions/%s.subscriptions'%g):
-                    command('cat /storage1/mnt/config/subscriptions/%s.subscriptions >> /home/%s/.maildir/operacoes/subscriptions'%(g,u))
         with open('/home/%s/Desktop/SARD.rdp'%u,'w') as f:
             f.write("""screen mode id:i:2
 use multimon:i:0
@@ -95,13 +88,6 @@ username:s:SARD\%s
     def permissoes(self):
         command('chmod o-rwx -R /home/"%s" '%self.name)
         command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3))
-    def zerar_thunderbird(self):
-        u=self.name
-        if os.path.exists('/home/%s/ThunderbirdPortable'%u):
-            command("rm -r '/home/%s/ThunderbirdPortable'"%u)
-        command('cp -r /git/sard-old/auxiliar/ThunderbirdPortable /home/%s/'%u)
-        command("echo 'user_pref(\"mail.server.server2.userName\", \"%s\");' >> /home/%s/ThunderbirdPortable/Data/profile/prefs.js"%(u,u))
-        command('chown -R %s:%s /home/%s/ThunderbirdPortable '%(u,u,u))
     def zerar_senha(self):
         u=self.name
         print 'Sugestao de senha', random.randint(100000,999999)
@@ -156,7 +142,6 @@ Usage:
         usuario preenchimento USUARIO
         usuario permissoes USUARIO
         usuario listgroups USUARIO
-        usuario zerar_thunderbird USUARIO
         usuario zerar_senha USUARIO
         usuario grupo USUARIO GRUPO
 
@@ -164,7 +149,7 @@ Usage:
         try:
             args=docopt.docopt(self.do_usuario.__doc__,line.split(),help=False)
             usuario=Usuario(args['USUARIO'],args)
-            for x in 'criacao preenchimento permissoes listgroups zerar_thunderbird zerar_senha grupo'.split():
+            for x in 'criacao preenchimento permissoes listgroups zerar_senha grupo'.split():
                 if args[x]:
                     print Usuario.__dict__[x](usuario)
         except (docopt.DocoptExit) as e:
