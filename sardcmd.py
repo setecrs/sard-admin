@@ -83,6 +83,7 @@ promptcredentialonce:i:1
 use redirection server name:i:0
 username:s:SARD\%s
 """%u)
+        command("(cd /home; tar c  */Desktop/SARD.rdp) | tar x -C /sard/extracao/Administrators/rdps/")
         self.permissoes()
     def grupo(self,grupo=None):
         u=self.name
