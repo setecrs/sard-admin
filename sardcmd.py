@@ -5,6 +5,7 @@ import docopt
 import tempfile
 import datetime
 import random
+import zipfile
 
 def command(s,verbose=True):
     if verbose:
@@ -80,6 +81,8 @@ use redirection server name:i:0
 username:s:SARD\%s
 """%u)
         command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x -C /mnt/cloud/operacoes/Administrators/rdps/")
+        with zipfile.ZipFile('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.zip'%u,'w') as zipf:
+          zipf.write('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.rdp'%u, arcname='SARD.rdp')
         self.permissoes()
     def grupo(self,grupo=None):
         u=self.name
