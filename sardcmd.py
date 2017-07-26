@@ -2,14 +2,14 @@
 import os
 import cmd
 import docopt
-import yaml
 import tempfile
 import datetime
 import random
-from sardutils import *
 
-# all_storages='vmhost1 vmhost2 vmhost3 storage1 backup1'.split()
-all_storages='storage1 storage2 backup1'.split()
+def command(s,verbose=True):
+    if verbose:
+        print s
+    return os.system(s)
 
 class Usuario:
     def __init__(self,name,args=None):
@@ -19,11 +19,14 @@ class Usuario:
         return os.popen('groups '+self.name).read().rstrip('\n').split(' ')[2:]
     def criacao(self):
         u=self.name
-        command('smbldap-groupadd -a "%s"'%u)
-        print 'Sugestao de senha', random.randint(100000,999999)
-        command('smbldap-useradd -a -g "%s" -P -s /bin/false -m  "%s"'%((u,)*2))
+	senha = random.randint(100000,999999)
+        print 'Senha inicial:', senha
+        if command('smbldap-groupadd -a "%s"'%u): #if exit code not zero
+            return 'refusing to proceed'
+        command('smbldap-useradd -a -g "%s" -s /bin/false -m "%s"'%(u,u))
         command('smbldap-usermod --shadowMax 3650 "%s"'%u)
-        self.grupo('Domain_Users')
+	command('echo "%s" | smbldap-passwd -p "%s"'%(senha,u))
+        self.grupo('Domain Users')
         self.preenchimento()
     def preenchimento(self):
         u=self.name
@@ -31,7 +34,7 @@ class Usuario:
         command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u)
         for g in self.listgroups():
             print "%s\t%s"%(u,g)
-            command('ln -snf /sard/extracao/%s /home/%s/Desktop/operacoes/%s'%(g,u,g))
+            command('ln -snf /mnt/cloud/operacoes/%s /home/%s/Desktop/operacoes/%s'%(g,u,g))
         with open('/home/%s/Desktop/SARD.rdp'%u,'w') as f:
             f.write("""screen mode id:i:2
 use multimon:i:0
@@ -76,17 +79,19 @@ promptcredentialonce:i:1
 use redirection server name:i:0
 username:s:SARD\%s
 """%u)
-        command("(cd /home; tar c  */Desktop/SARD.rdp) | tar x -C /sard/extracao/Administrators/rdps/")
+        command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x -C /mnt/cloud/operacoes/Administrators/rdps/")
         self.permissoes()
     def grupo(self,grupo=None):
         u=self.name
         if grupo==None:
             grupo = self.args['GRUPO']
-        command('smbldap-groupmod -m %s %s'%(u,grupo))
-        command('sss_cache -U -G')
+        command("smbldap-groupmod -m %s '%s'"%(u,grupo))
+        if command('sss_cache -U -G'):
+            #if can not reset cache, wait a minute to refresh
+            command('sleep 60') 
 	self.preenchimento()
     def permissoes(self):
-        command('chmod o-rwx -R /home/"%s" '%self.name)
+        command('chmod o-rwx /home/"%s" '%self.name)
         command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3))
     def zerar_senha(self):
         u=self.name
@@ -101,21 +106,15 @@ class Operacao:
     def criacao(self):
         op=self.name
         command('smbldap-groupadd "%s"'%op)
-        for x in all_storages:
-            command('mkdir /storages/%s/extracao/"%s"'%(x,op))
-            command('mkdir /storages/%s/emails/"%s"'%(x,op))
-            command('mkdir /storages/%s/imagens/"%s"'%(x,op))
+        command('mkdir /operacoes/"%s"'%(op))
         self.permissoes()
     def permissoes(self):
         op=self.name
-        for x in all_storages:
-            command('chown -R -h root:"%s" /storages/%s/extracao/"%s"'%(op,x,op))
-            command('chown -R -h root:"%s" /storages/%s/emails/"%s"'%(op,x,op))
-            command('chown -R -h root:"%s" /storages/%s/imagens/"%s"'%(op,x,op))
-            command('chmod -R u=rX,g=rX,o-rwx /storages/%s/extracao/"%s"'%(x,op))
-            command('chmod -R u=rX,g=rX,o-rwx /storages/%s/emails/"%s"'%(x,op))
-            command('chmod -R u=rX,g=rX,o-rwx /storages/%s/imagens/"%s"'%(x,op))
-# 05/05/2015 Aristeu: Adicionado suporte a criacao do diretorio de email da operacao e suas permissoes 
+        command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 | xargs -L1 -0 chmod -v a+x '%(op))
+        command('chown -vR -h root:"%s" /operacoes/"%s"'%(op,op))
+        command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op))
+        command('chmod -vR a+rX            /operacoes/"%s"/*'%(op))
+        command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op))
             
 class Sard(cmd.Cmd):
     def do_operacao(self,line):
@@ -164,4 +163,8 @@ Usage:
         print
 
 if __name__=='__main__':
-    Sard().cmdloop()
+    import sys
+    if len(sys.argv)>1:
+        Sard().onecmd(' '.join(sys.argv[1:]))
+    else:
+        Sard().cmdloop()
