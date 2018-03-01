@@ -41,4 +41,4 @@ gatewayprofileusagemethod:i:0
 promptcredentialonce:i:1
 use redirection server name:i:0
 username:s:SARD\%s
-"""%u
+"""%user

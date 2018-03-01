@@ -22,12 +22,13 @@ class Usuario:
         senha = random.randint(100000, 999999)
         print 'Senha inicial:', senha
         if command('smbldap-groupadd -a "%s"'%u): #if exit code not zero
-            return 'refusing to proceed'
+            raise Exception('Error creating user, refusing to proceed. Maybe user already exists?')
         command('smbldap-useradd -a -g "%s" -s /bin/false -m "%s"'%(u, u))
         command('smbldap-usermod --shadowMax 3650 "%s"'%u)
         command('echo "%s" | smbldap-passwd -p "%s"'%(senha, u))
         self.grupo('Domain Users')
         self.preenchimento()
+        return senha
     def preenchimento(self):
         u = self.name
         command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u)
@@ -37,7 +38,7 @@ class Usuario:
         with open('/home/%s/Desktop/SARD.rdp'%u, 'w') as f:
             f.write(mkrdp(u))
         command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x -C /mnt/cloud/operacoes/Administrators/rdps/")
-        with zipfile.ZipFile('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.zip'%u, 'w') as zipf:
+        with zipfile.ZipFile('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/%s.zip'%(u, u), 'w') as zipf:
             zipf.write('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.rdp'%u, arcname='SARD.rdp')
         self.permissoes()
     def grupo(self, grupo=None):
