@@ -1,15 +1,10 @@
 #!/usr/bin/env python
-import os
+import inspect
 import cmd
 import docopt
 
-from operacao import Operacao
-from usuario import Usuario
-
-def command(s, verbose=True):
-    if verbose:
-        print s
-    return os.system(s)
+from pkg.operacao import Operacao
+from pkg.usuario import Usuario
 
 class Sard(cmd.Cmd):
     def do_operacao(self, line):
@@ -24,7 +19,12 @@ Usage:
             operacao = Operacao(args['OPERACAO'])
             for x in 'criacao permissoes'.split():
                 if args[x]:
-                    print Operacao.__dict__[x](operacao)
+                    f = Operacao.__dict__[x]
+                    if inspect.isgeneratorfunction(f):
+                        for x in f(operacao):
+                            print x
+                    else:
+                        print f(operacao)
         except (docopt.DocoptExit) as e:
             print e
 
@@ -45,7 +45,11 @@ Usage:
             usuario = Usuario(args['USUARIO'], args)
             for x in 'criacao preenchimento permissoes listgroups zerar_senha grupo'.split():
                 if args[x]:
-                    print Usuario.__dict__[x](usuario)
+                    if inspect.isgeneratorfunction(Usuario.__dict__[x]):
+                        for x in Usuario.__dict__[x](usuario):
+                            print x
+                    else:
+                        print Usuario.__dict__[x](usuario)
         except (docopt.DocoptExit) as e:
             print e
 
@@ -60,6 +64,6 @@ Usage:
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
-        Sard().onecmd(' '.join(sys.argv[1:]))
+        print Sard().onecmd(' '.join(sys.argv[1:]))
     else:
         Sard().cmdloop()

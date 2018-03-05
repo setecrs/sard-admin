@@ -1,47 +1,111 @@
 #!/usr/bin/env python
 
-from flask import Flask
+from flask import Flask, stream_with_context, Response
 from flask_restplus import Resource, Api
 from werkzeug.exceptions import BadRequest
 
-from usuario import Usuario
+from pkg.usuario import Usuario, listusers
+from pkg.operacao import Operacao, listgroups
 
 app = Flask(__name__)                  #  Create a Flask WSGI appliction
 api = Api(app)                         #  Create a Flask-RESTPlus API
 
-# class ErrorHandler(Exception):
-#     status_code = 400
-#
-#     def __init__(self, message, status_code=None, payload=None):
-#         Exception.__init__(self)
-#         self.message = message
-#         if status_code is not None:
-#             self.status_code = status_code
-#         self.payload = payload
-#
-#     def to_dict(self):
-#         rv = dict(self.payload or ())
-#         rv['message'] = self.message
-#         return rv
-#
-# @app.errorhandler(ErrorHandler)
-# def error_handler(error):
-#     response = str(error)
-#     response.status_code = error.status_code
-#     return response
-
-@api.route('/usuario/criacao/<string:login>')                   #  Create a URL route to this resource
-class UsuarioRoute(Resource):            #  Create a RESTful resource
-    def post(self, login):                     #  Create GET endpoint
+def respGen(generator):
+    def g():
         try:
-            usuario = Usuario(login)
-            senha = usuario.criacao()
+            for x in generator:
+                yield x
+        except (Exception) as e:
+            yield str(e)
+    return Response(stream_with_context(g()))
+
+@api.route('/grupo/')
+class GroupRoute(Resource):
+    def get(self):
+        try:
+            groups = listgroups()
             return {
-                'usuario': login,
-                'senha': senha,
+                'grupos': groups,
             }
         except Exception as e:
             raise BadRequest(str(e))
 
+@api.route('/grupo/<string:grupo>')
+class GroupNewRoute(Resource):
+    def get(self, grupo):
+        try:
+            group = Operacao(grupo)
+            return group.users()
+        except Exception as e:
+            raise BadRequest(str(e))
+
+    @api.representation('text/plain')
+    def post(self, grupo):
+        try:
+            group = Operacao(grupo)
+            return respGen(group.criacao())
+        except Exception as e:
+            raise BadRequest(str(e))
+
+@api.route('/grupo/<string:grupo>/permissoes')
+class GroupPermsRoute(Resource):
+    @api.representation('text/plain')
+    def post(self, grupo):
+        try:
+            group = Operacao(grupo)
+            return respGen(group.permissoes())
+        except Exception as e:
+            raise BadRequest(str(e))
+
+@api.route('/usuario')
+class UsuarioListRoute(Resource):
+    def get(self):
+        try:
+            usuarios = listusers()
+            return {
+                'usuarios': usuarios,
+            }
+        except Exception as e:
+            raise BadRequest(str(e))
+
+@api.route('/usuario/<string:login>')
+class UsuarioCriacaoRoute(Resource):
+    def get(self, login):
+        try:
+            usuario = Usuario(login)
+            groups = usuario.listgroups()
+            return {
+                'usuario': login,
+                'grupos': groups,
+            }
+        except Exception as e:
+            raise BadRequest(str(e))
+    @api.representation('text/plain')
+    def post(self, login):
+        try:
+            usuario = Usuario(login)
+            return respGen(usuario.criacao())
+        except Exception as e:
+            raise BadRequest(str(e))
+
+@api.route('/usuario/<string:login>/grupo/<string:grupo>')
+class UsuarioGrupoRoute(Resource):
+    @api.representation('text/plain')
+    def post(self, login, grupo):
+        try:
+            usuario = Usuario(login)
+            return respGen(usuario.grupo(grupo))
+        except Exception as e:
+            raise BadRequest(str(e))
+
+@api.route('/usuario/<string:login>/kill')
+class UsuarioKillRoute(Resource):
+    @api.representation('text/plain')
+    def post(self, login):
+        try:
+            usuario = Usuario(login)
+            return respGen(usuario.kill())
+        except Exception as e:
+            raise BadRequest(str(e))
 if __name__ == '__main__':
-    app.run(debug=True)                #  Start a development server
+    app.run(debug=True, host="0.0.0.0")
