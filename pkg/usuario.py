@@ -52,15 +52,12 @@ class Usuario:
             yield x
         for g in self.listgroups():
             print "%s\t%s"%(u, g)
-            for x in command('ln -snf /mnt/cloud/operacoes/%s /home/%s/Desktop/operacoes/%s'%(g, u, g)):
+            for x in command("ln -snf /mnt/cloud/operacoes/'%s' /home/'%s'/Desktop/operacoes/'%s'"%(g, u, g)):
                 yield x
         with open('/home/%s/Desktop/SARD.rdp'%u, 'w') as f:
             f.write(mkrdp(u))
-        try:
-            for x in command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x -C /mnt/cloud/operacoes/Administrators/rdps/"):
-                yield x
-        except:
-            pass
+        for x in command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x --overwrite -C /mnt/cloud/operacoes/Administrators/rdps/"):
+            yield x
         with zipfile.ZipFile('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/%s.zip'%(u, u), 'w') as zipf:
             zipf.write('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.rdp'%u, arcname='SARD.rdp')
         for x in self.permissoes():

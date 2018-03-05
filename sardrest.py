@@ -22,6 +22,7 @@ def respGen(generator):
 @api.route('/grupo/')
 class GroupRoute(Resource):
     def get(self):
+        """Lista todos os grupos"""
         try:
             groups = listgroups()
             return {
@@ -33,6 +34,7 @@ class GroupRoute(Resource):
 @api.route('/grupo/<string:grupo>')
 class GroupNewRoute(Resource):
     def get(self, grupo):
+        """Lista membros do grupo"""
         try:
             group = Operacao(grupo)
             return group.users()
@@ -41,6 +43,7 @@ class GroupNewRoute(Resource):
 
     @api.representation('text/plain')
     def post(self, grupo):
+        """Cria novo grupo"""
         try:
             group = Operacao(grupo)
             return respGen(group.criacao())
@@ -51,6 +54,7 @@ class GroupNewRoute(Resource):
 class GroupPermsRoute(Resource):
     @api.representation('text/plain')
     def post(self, grupo):
+        """Verifica e corrige permissoes do grupo"""
         try:
             group = Operacao(grupo)
             return respGen(group.permissoes())
@@ -60,6 +64,7 @@ class GroupPermsRoute(Resource):
 @api.route('/usuario')
 class UsuarioListRoute(Resource):
     def get(self):
+        """Lista todos os usuarios"""
         try:
             usuarios = listusers()
             return {
@@ -71,6 +76,7 @@ class UsuarioListRoute(Resource):
 @api.route('/usuario/<string:login>')
 class UsuarioCriacaoRoute(Resource):
     def get(self, login):
+        """Lista grupos do usuario"""
         try:
             usuario = Usuario(login)
             groups = usuario.listgroups()
@@ -82,6 +88,7 @@ class UsuarioCriacaoRoute(Resource):
             raise BadRequest(str(e))
     @api.representation('text/plain')
     def post(self, login):
+        """Cria novo usuario"""
         try:
             usuario = Usuario(login)
             return respGen(usuario.criacao())
@@ -92,20 +99,42 @@ class UsuarioCriacaoRoute(Resource):
 class UsuarioGrupoRoute(Resource):
     @api.representation('text/plain')
     def post(self, login, grupo):
+        """Adiciona usuario ao grupo"""
         try:
             usuario = Usuario(login)
             return respGen(usuario.grupo(grupo))
         except Exception as e:
             raise BadRequest(str(e))
 
-@api.route('/usuario/<string:login>/kill')
-class UsuarioKillRoute(Resource):
+@api.route('/usuario/<string:login>/preenchimento')
+class UsuarioPreenchimentoRoute(Resource):
     @api.representation('text/plain')
     def post(self, login):
+        """Verifica e corrige pasta home do usuario"""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.kill())
+            return respGen(usuario.preenchimento())
         except Exception as e:
             raise BadRequest(str(e))
+@api.route('/usuario/<string:login>/permissoes')
+class UsuarioPermsRoute(Resource):
+    @api.representation('text/plain')
+    def post(self, login):
+        """Verifica e corrige permissoes do usuario"""
+        try:
+            usuario = Usuario(login)
+            return respGen(usuario.permissoes())
+        except Exception as e:
+            raise BadRequest(str(e))
+# @api.route('/usuario/<string:login>/kill')
+# class UsuarioKillRoute(Resource):
+#     @api.representation('text/plain')
+#     def post(self, login):
+#         """Mata processo do usuario no samba - nao funciona pq samba esta em PID namespace diferente"""
+#         try:
+#             usuario = Usuario(login)
+#             return respGen(usuario.kill())
+#         except Exception as e:
+#             raise BadRequest(str(e))
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
