@@ -1,5 +1,6 @@
 import os
 import random
+import time
 import zipfile
 
 from operacao import Operacao
@@ -21,6 +22,14 @@ class Usuario:
         for x in command("smbstatus -bpu %s | tail -n1 | awk '{print $1}' | xargs kill"%self.name):
             yield x
 
+    def ensure(self, tries=6):
+        if not self.name in listusers():
+            if tries < 1:
+                raise Exception('user doesn\'t exist')
+            if os.system('sss_cache -U -G'):
+                time.sleep(10)
+            self.ensure(tries-1)
+
     def criacao(self):
         u = self.name
         if u in listusers():
@@ -41,13 +50,7 @@ class Usuario:
             yield x
     def preenchimento(self):
         u = self.name
-        if not u in listusers():
-            if os.system('sss_cache -U -G'):
-                #if can not reset cache, wait a minute to refresh
-                for x in command('sleep 60'):
-                    yield x
-            if not u in listusers():
-                raise Exception('user doesn\'t exist')
+        self.ensure()
         for x in command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u):
             yield x
         for g in self.listgroups():
@@ -64,13 +67,7 @@ class Usuario:
             yield x
     def grupo(self, grupo=None):
         u = self.name
-        if not u in listusers():
-            if os.system('sss_cache -U -G'):
-                #if can not reset cache, wait a minute to refresh
-                for x in command('sleep 60'):
-                    yield x
-            if not u in listusers():
-                raise Exception('user doesn\'t exist')
+        self.ensure()
         if grupo is None:
             grupo = self.args['GRUPO']
         op = Operacao(grupo)
@@ -87,25 +84,16 @@ class Usuario:
         for x in self.preenchimento():
             yield x
     def permissoes(self):
-        if not self.name in listusers():
-            if os.system('sss_cache -U -G'):
-                #if can not reset cache, wait a minute to refresh
-                for x in command('sleep 60'):
-                    yield x
-            if not self.name in listusers():
-                raise Exception('user doesn\'t exist')
-        for x in command('chmod o-rwx /home/"%s" '%self.name):
-            yield x
-        for x in command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3)):
-            yield x
+        self.ensure()
+        try:
+            for x in command('chmod o-rwx /home/"%s" '%self.name):
+                yield x
+            for x in command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3)):
+                yield x
+        except:
+            pass
     def zerar_senha(self):
-        if not self.name in listusers():
-            if os.system('sss_cache -U -G'):
-                #if can not reset cache, wait a minute to refresh
-                for x in command('sleep 60'):
-                    yield x
-            if not self.name in listusers():
-                raise Exception('user doesn\'t exist')
+        self.ensure()
         u = self.name
         print 'Sugestao de senha', random.randint(100000, 999999)
         for x in command('smbldap-passwd "%s"'%u):

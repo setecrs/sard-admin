@@ -1,5 +1,5 @@
 import os
-import subprocess
+import time
 
 from command import command
 
@@ -12,6 +12,15 @@ class Operacao:
 
     def exists(self):
         return self.name in listgroups()
+
+    def ensure(self, tries=6):
+        if not self.name in listgroups():
+            if tries < 1:
+                raise Exception('group doesn\'t exist')
+            if os.system('sss_cache -U -G'):
+                time.sleep(10)
+            self.ensure(tries-1)
+
 
     def users(self):
         return [x for x in os.popen('getent group %s'%self.name).read().rstrip('\n').split(':')[-1].split(',')]
@@ -30,16 +39,18 @@ class Operacao:
         for x in self.permissoes():
             yield x
     def permissoes(self):
-        if not self.exists():
-            raise Exception('Group doesn\'t exist')
+        self.ensure()
         op = self.name
-        for x in command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -L1 -0 chmod -v a+x '%(op)):
-            yield x
-        for x in command('chown -vR -h root:"%s" /operacoes/"%s"'%(op, op)):
-            yield x
-        for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-            yield x
-        for x in command('chmod -vR a+rX            /operacoes/"%s"/*'%(op)):
-            yield x
-        for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-            yield x
+        try:
+            for x in command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -v a+x '%(op)):
+                yield x
+            for x in command('chown -vR -h root:"%s" /operacoes/"%s"'%(op, op)):
+                yield x
+            for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+                yield x
+            for x in command('chmod -vR a+rX            /operacoes/"%s"/*'%(op)):
+                yield x
+            for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+                yield x
+        except:
+            pass
