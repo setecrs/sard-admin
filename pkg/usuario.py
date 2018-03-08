@@ -79,16 +79,16 @@ class Usuario:
             yield x
         if os.system('sss_cache -U -G'):
             #if can not reset cache, wait a minute to refresh
-            for x in command('sleep 60'):
+            for x in command('sleep 5'):
                 yield x
         for x in self.preenchimento():
             yield x
     def permissoes(self):
         self.ensure()
         try:
-            for x in command('chmod o-rwx /home/"%s" '%self.name):
+            for x in command('chmod -c o-rwx /home/"%s" '%self.name):
                 yield x
-            for x in command('chown -h -R "%s":"%s" /home/"%s" '%((self.name,)*3)):
+            for x in command('chown -ch -R "%s":"%s" /home/"%s" '%((self.name,)*3)):
                 yield x
         except:
             pass

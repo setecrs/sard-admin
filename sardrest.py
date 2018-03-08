@@ -8,7 +8,7 @@ from pkg.usuario import Usuario, listusers
 from pkg.operacao import Operacao, listgroups
 
 app = Flask(__name__)                  #  Create a Flask WSGI appliction
-api = Api(app)                         #  Create a Flask-RESTPlus API
+api = Api(app, default_mediatype='text/plain')                         #  Create a Flask-RESTPlus API
 
 def respGen(generator):
     def g():
@@ -17,7 +17,9 @@ def respGen(generator):
                 yield x
         except (Exception) as e:
             yield str(e)
-    return Response(stream_with_context(g()))
+    resp = Response(stream_with_context(g()))
+    resp.headers['Content-Type'] = 'text/plain'
+    return resp
 
 @api.route('/grupo/')
 class GroupRoute(Resource):

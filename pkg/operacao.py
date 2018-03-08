@@ -42,15 +42,15 @@ class Operacao:
         self.ensure()
         op = self.name
         try:
-            for x in command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -v a+x '%(op)):
+            for x in command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -c a+x '%(op)):
                 yield x
-            for x in command('chown -vR -h root:"%s" /operacoes/"%s"'%(op, op)):
+            for x in command('chown -cR -h root:"%s" /operacoes/"%s"'%(op, op)):
                 yield x
-            for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+            for x in command('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
                 yield x
-            for x in command('chmod -vR a+rX            /operacoes/"%s"/*'%(op)):
+            for x in command('chmod -cR a+rX            /operacoes/"%s"/*'%(op)):
                 yield x
-            for x in command('chmod -v  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+            for x in command('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
                 yield x
         except:
             pass
