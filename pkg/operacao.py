@@ -11,14 +11,14 @@ class Operacao:
         self.name = name
 
     def exists(self):
-        return self.name in listgroups()
+        return not os.system("getent group '%s'"%self.name)
 
-    def ensure(self, tries=6):
-        if not self.name in listgroups():
+    def ensure(self, tries=10):
+        if not self.exists():
             if tries < 1:
                 raise Exception('group doesn\'t exist')
-            if os.system('sss_cache -U -G'):
-                time.sleep(10)
+            os.system('sss_cache -U -G')
+            time.sleep(10)
             self.ensure(tries-1)
 
 
@@ -35,9 +35,10 @@ class Operacao:
             for x in command('mkdir /operacoes/"%s"'%(op)):
                 yield x
         except:
-            pass
+	    yield "Error making dir? Not a problem, let's move on.\n"
         for x in self.permissoes():
             yield x
+        yield "Success"
     def permissoes(self):
         self.ensure()
         op = self.name
@@ -53,4 +54,4 @@ class Operacao:
             for x in command('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
                 yield x
         except:
-            pass
+            yield "Ignoring error\n"

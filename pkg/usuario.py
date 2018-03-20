@@ -17,17 +17,19 @@ class Usuario:
 
     def listgroups(self):
         return os.popen('id -Gnz '+self.name).read().rstrip('\x00').split('\x00')
+    def exists(self):
+	return not os.system("getent passwd '%s'"%self.name)
 
     def kill(self):
         for x in command("smbstatus -bpu %s | tail -n1 | awk '{print $1}' | xargs kill"%self.name):
             yield x
 
-    def ensure(self, tries=6):
-        if not self.name in listusers():
+    def ensure(self, tries=10):
+        if not self.exists():
             if tries < 1:
                 raise Exception('user doesn\'t exist')
-            if os.system('sss_cache -U -G'):
-                time.sleep(10)
+            os.system('sss_cache -U -G')
+            time.sleep(10)
             self.ensure(tries-1)
 
     def criacao(self):
