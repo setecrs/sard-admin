@@ -38,20 +38,37 @@ class Operacao:
 	    yield "Error making dir? Not a problem, let's move on.\n"
         for x in self.permissoes():
             yield x
-        yield "Success"
     def permissoes(self):
         self.ensure()
         op = self.name
-        try:
-            for x in command('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -c a+x '%(op)):
-                yield x
-            for x in command('chown -cR -h root:"%s" /operacoes/"%s"'%(op, op)):
-                yield x
-            for x in command('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-                yield x
-            for x in command('chmod -cR a+rX            /operacoes/"%s"/*'%(op)):
-                yield x
-            for x in command('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-                yield x
-        except:
-            yield "Ignoring error\n"
+        for x in ignore(point(command))('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -c a+x '%(op)):
+            yield x
+        for x in ignore(point(command))('chown -cR -h root:"%s" /operacoes/"%s"'%(op, op)):
+            yield x
+        for x in ignore(point(command))('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+            yield x
+        for x in ignore(point(command))('chmod -cR a+rX            /operacoes/"%s"/*'%(op)):
+            yield x
+        for x in ignore(point(command))('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
+            yield x
+        yield "Ok"
+
+def point(f):
+  def handle(arg):
+    first=True
+    for x in f(arg):
+      if first:
+        first=False
+        yield x
+      else:
+        yield "."
+  return handle
+
+def ignore(f):
+  def handle(arg):
+    try:
+      for x in f(arg):
+	yield x
+    except Exception as e:
+      yield "Ignoring error %s\n"%e.message
+  return handle
