@@ -52,6 +52,17 @@ class GroupNewRoute(Resource):
         except Exception as e:
             raise BadRequest(str(e))
 
+@api.route('/grupo/<string:grupo>/permissoesexe')
+class GroupPermsRoute(Resource):
+    @api.representation('text/plain')
+    def post(self, grupo):
+        """Verifica e corrige permissoes do grupo"""
+        try:
+            group = Operacao(grupo)
+            return respGen(group.permissoesExe())
+        except Exception as e:
+            raise BadRequest(str(e))
+
 @api.route('/grupo/<string:grupo>/permissoes')
 class GroupPermsRoute(Resource):
     @api.representation('text/plain')

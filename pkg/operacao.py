@@ -38,11 +38,18 @@ class Operacao:
 	    yield "Error making dir? Not a problem, let's move on.\n"
         for x in self.permissoes():
             yield x
+    def permissoesExe(self):
+        op = self.name
+        for raw in command('find /operacoes/"%s" -name indexador -prune -o -name "?ista de ?rquivos.csv" -print '%(op)):
+            for line in raw.strip().split('\n'):
+		case = line.rsplit('/',1)[0]
+                for subpath in ['*.exe', 'indexador/tools/', 'indexador/jre/bin/', 'indexador/lib/']:
+                    for x in ignore(point(command))('chmod -cR a+x "%s"/"%s" '%(case, subpath)):
+                        yield x
     def permissoes(self):
         self.ensure()
         op = self.name
-        for x in ignore(point(command))('find /operacoes/"%s" -name indexador -prune -o -name "Ferramenta de Pesquisa.exe" -print0 -o -name "IPED-SearchApp.exe" -print0 | xargs -r -L1 -0 chmod -c a+x '%(op)):
-            yield x
+        self.permissoesExe()
         for x in ignore(point(command))('chown -cR -h root:"%s" /operacoes/"%s"'%(op, op)):
             yield x
         for x in ignore(point(command))('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
