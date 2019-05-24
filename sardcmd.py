@@ -36,7 +36,7 @@ Usage:
         usuario preenchimento USUARIO
         usuario permissoes USUARIO
         usuario listgroups USUARIO
-        usuario zerar_senha USUARIO
+        usuario zerar_senha USUARIO PWD
         usuario grupo USUARIO GRUPO
 
 """

@@ -6,6 +6,7 @@ import zipfile
 from operacao import Operacao
 from mkrdp import mkrdp
 from command import command
+from subprocess import Popen, PIPE, STDOUT
 
 def listusers():
     return [x.split(':')[0] for x in os.popen('getent passwd').read().rstrip('\n').split('\n')]
@@ -94,11 +95,22 @@ class Usuario:
                 yield x
         except:
             pass
-    def zerar_senha(self):
+    def random_password(self):
+        return '%d'%random.randint(100000, 999999)
+    def zerar_senha(self, password):
         self.ensure()
         u = self.name
-        print 'Sugestao de senha', random.randint(100000, 999999)
-        for x in command('smbldap-passwd "%s"'%u):
-            yield x
+        if password in ["", "string", None]:
+            password = self.random_password()
+            yield 'new password: ' + password + '\n'
+        c = 'smbldap-passwd "%s" -p'%u
+        print c
+        yield c + '\n'
+        p = Popen(c, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
+        for line in p.communicate(input=b'%s\n%s'%(password,password)):
+            print line
+            yield line + '\n'
+        if p.returncode != 0:
+            raise Exception('Return code not zero.')
         for x in command('smbldap-usermod --shadowMax 3650 "%s"'%u):
             yield x
