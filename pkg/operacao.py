@@ -44,7 +44,7 @@ class Operacao:
             for line in raw.strip().split('\n'):
 		case = line.rsplit('/',1)[0]
                 for subpath in ['*.exe', 'indexador/tools/', 'indexador/jre/bin/', 'indexador/lib/']:
-                    for x in ignore(point(command))('chmod -cR a+x "%s"/"%s" '%(case, subpath)):
+                    for x in ignore(point(command))('chmod -cR a+x "%s"/%s '%(case, subpath)):
                         yield x
     def permissoes(self):
         self.ensure()
