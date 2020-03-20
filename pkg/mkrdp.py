@@ -19,7 +19,7 @@ disable menu anims:i:1
 disable themes:i:0
 disable cursor setting:i:0
 bitmapcachepersistenable:i:1
-full address:s:10.51.4.190
+full address:s:10.51.4.160:40389
 audiomode:i:0
 redirectprinters:i:1
 redirectcomports:i:0
