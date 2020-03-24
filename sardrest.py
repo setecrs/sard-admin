@@ -1,25 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from flask import Flask, stream_with_context, Response
+from flask import Flask, stream_with_context, Response, make_response
 from flask_restplus import Resource, Api, fields
 from werkzeug.exceptions import BadRequest
 
 from pkg.usuario import Usuario, listusers
-from pkg.operacao import Operacao, listgroups
+from pkg.operacao import Operacao, listgroups, jobs, history
 
 app = Flask(__name__)                  #  Create a Flask WSGI appliction
 api = Api(app, default_mediatype='text/plain')                         #  Create a Flask-RESTPlus API
 
-def respGen(generator):
-    def g():
-        try:
-            for x in generator:
-                yield x
-        except (Exception) as e:
-            yield str(e)
-    resp = Response(stream_with_context(g()))
-    resp.headers['Content-Type'] = 'text/plain'
-    return resp
+@api.route('/jobs/', methods=['GET'])
+class Jobs(Resource):
+    def get(self):
+        return {
+            "history": [dict((k,h[k]) for k in h if k != 'thread') for h in history],
+            "jobs": dict([(op, dict((k,jobs[op][k]) for k in jobs[op] if k != 'thread')) for op in jobs]),
+            }
 
 @api.route('/grupo/')
 class GroupRoute(Resource):
@@ -48,18 +45,19 @@ class GroupNewRoute(Resource):
         """Cria novo grupo"""
         try:
             group = Operacao(grupo)
-            return respGen(group.criacao())
+            group.criacao()
+            return make_response('', 204)
         except Exception as e:
             raise BadRequest(str(e))
 
 @api.route('/grupo/<string:grupo>/permissoesexe')
-class GroupPermsRoute(Resource):
+class GroupPermsExeRoute(Resource):
     @api.representation('text/plain')
     def post(self, grupo):
         """Verifica e corrige permissoes do grupo"""
         try:
             group = Operacao(grupo)
-            return respGen(group.permissoesExe())
+            return group.permissoesExe()
         except Exception as e:
             raise BadRequest(str(e))
 
@@ -70,11 +68,11 @@ class GroupPermsRoute(Resource):
         """Verifica e corrige permissoes do grupo"""
         try:
             group = Operacao(grupo)
-            return respGen(group.permissoes())
+            return group.permissoes()
         except Exception as e:
             raise BadRequest(str(e))
 
-@api.route('/usuario')
+@api.route('/usuario/')
 class UsuarioListRoute(Resource):
     def get(self):
         """Lista todos os usuarios"""
@@ -104,7 +102,8 @@ class UsuarioCriacaoRoute(Resource):
         """Cria novo usuario"""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.criacao())
+            usuario.criacao()
+            return make_response('', 204)
         except Exception as e:
             raise BadRequest(str(e))
 
@@ -115,7 +114,8 @@ class UsuarioGrupoRoute(Resource):
         """Adiciona usuario ao grupo"""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.grupo(grupo))
+            usuario.grupo(grupo)
+            return make_response('', 204)
         except Exception as e:
             raise BadRequest(str(e))
 
@@ -126,9 +126,11 @@ class UsuarioPreenchimentoRoute(Resource):
         """Verifica e corrige pasta home do usuario"""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.preenchimento())
+            usuario.preenchimento()
+            return make_response('', 204)
         except Exception as e:
             raise BadRequest(str(e))
+
 @api.route('/usuario/<string:login>/permissoes')
 class UsuarioPermsRoute(Resource):
     @api.representation('text/plain')
@@ -136,19 +138,11 @@ class UsuarioPermsRoute(Resource):
         """Verifica e corrige permissoes do usuario"""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.permissoes())
+            usuario.permissoes()
+            return make_response('', 204)
         except Exception as e:
             raise BadRequest(str(e))
-@api.route('/usuario/<string:login>/random_password')
-class UsuarioRNDRoute(Resource):
-    @api.representation('text/plain')
-    def get(self, login):
-        """Gera uma senha aleatoria"""
-        try:
-            usuario = Usuario(login)
-            return respGen(usuario.random_password())
-        except Exception as e:
-            raise BadRequest(str(e))
+
 @api.route('/usuario/<string:login>/zerar_senha')
 class UsuarioSenhaRoute(Resource):
     @api.representation('text/plain')
@@ -159,9 +153,10 @@ class UsuarioSenhaRoute(Resource):
         """Altera a senha do usuario. Se a senha for "" ou "string", uma senha aleatoria sera criada."""
         try:
             usuario = Usuario(login)
-            return respGen(usuario.zerar_senha(api.payload['password']))
+            return usuario.zerar_senha(api.payload['password'])
         except Exception as e:
             raise BadRequest(str(e))
+
 # @api.route('/usuario/<string:login>/kill')
 # class UsuarioKillRoute(Resource):
 #     @api.representation('text/plain')
@@ -172,5 +167,6 @@ class UsuarioSenhaRoute(Resource):
 #             return respGen(usuario.kill())
 #         except Exception as e:
 #             raise BadRequest(str(e))
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")

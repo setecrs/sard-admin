@@ -2,115 +2,123 @@ import os
 import random
 import time
 import zipfile
+from subprocess import PIPE, STDOUT, run
+from shutil import copyfile
+from pwd import getpwnam
+from grp import getgrnam
 
-from operacao import Operacao
-from mkrdp import mkrdp
-from command import command
-from subprocess import Popen, PIPE, STDOUT
+from .operacao import Operacao
+from .mkrdp import mkrdp
 
 def listusers():
-    return [x.split(':')[0] for x in os.popen('getent passwd').read().rstrip('\n').split('\n')]
+    run(['sss_cache', '-U', '-G'], check=True)
+    compl = run(['smbldap-userlist'], stdout=PIPE, encoding='utf-8', check=True)
+    data = compl.stdout.split('\n')
+    users = [x for x in data[1:] if '|' in x]
+    users = [x.split('|')[1].strip() for x in users]
+    return users
 
 class Usuario:
-    def __init__(self, name, args=None):
+    def __init__(self, name, args=None, history_timeout=3600):
         self.name = name
         self.args = args
+        self.history_timeout = history_timeout
 
     def listgroups(self):
-        return os.popen('id -Gnz '+self.name).read().rstrip('\x00').split('\x00')
+        run(['sss_cache', '-U', '-G'], check=True)
+        proc = run(['id', '-Gnz', self.name], check=True, stdout=PIPE, encoding='utf-8')
+        groups = proc.stdout.strip('\x00').split('\x00')
+        return groups
+
     def exists(self):
-	return not os.system("getent passwd '%s'"%self.name)
+        return self.name in listusers()
 
     def kill(self):
-        for x in command("smbstatus -bpu %s | tail -n1 | awk '{print $1}' | xargs kill"%self.name):
-            yield x
+        proc = run(['smbstatus', '-bpu', self.name], stdout=PIPE, check=True, encoding='utf-8')
+        lines = proc.stdout.strip().split('\n')
+        for line in lines[1:]:
+            pid = line.split(' ',1)[0]
+            run(['kill', pid], check=True)
 
-    def ensure(self, tries=10):
-        if not self.exists():
-            if tries < 1:
-                raise Exception('user doesn\'t exist')
-            os.system('sss_cache -U -G')
-            time.sleep(10)
-            self.ensure(tries-1)
+    def delete(self):
+        run(['sss_cache', '-U', '-G'], check=True)
+        run(['smbldap-userdel', self.name], check=True)
+        run(['smbldap-groupdel', self.name], check=True)
 
     def criacao(self):
-        u = self.name
-        if u in listusers():
+        run(['sss_cache', '-U', '-G'], check=True)
+        if self.name in listusers():
             raise Exception('user already exists')
-        senha = random.randint(100000, 999999)
-        print 'Senha inicial:', senha
-        for x in command('smbldap-groupadd -a "%s"'%u): #if exit code not zero:
-            yield x
-        for x in command('smbldap-useradd -a -g "%s" -s /bin/false -m "%s"'%(u, u)):
-            yield x
-        for x in command('smbldap-usermod --shadowMax 3650 "%s"'%u):
-            yield x
-        for x in command('echo "%s" | smbldap-passwd -p "%s"'%(senha, u)):
-            yield x
-        for x in self.grupo('Domain Users'):
-            yield x
-        for x in self.preenchimento():
-            yield x
+        run(['smbldap-groupadd', '-a', self.name], check=True)
+        run(['smbldap-useradd', '-a', '-g', self.name, '-s', '/bin/false','-m', self.name], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
+        assert self.name in listusers()
+        assert self.name in self.listgroups()
+        self.grupo('Domain Users')
+        self.preenchimento()
+        return self.zerar_senha()
+
     def preenchimento(self):
-        u = self.name
-        self.ensure()
-        for x in command('mkdir -p -m 777 /home/%s/Desktop/operacoes/'%u):
-            yield x
-        for g in self.listgroups():
-            print "%s\t%s"%(u, g)
-            for x in command("ln -snf /mnt/cloud/operacoes/'%s' /home/'%s'/Desktop/operacoes/'%s'"%(g, u, g)):
-                yield x
-        with open('/home/%s/Desktop/SARD.rdp'%u, 'w') as f:
-            f.write(mkrdp(u))
-        for x in command("(cd /home; tar c */Desktop/SARD.rdp --mode='a+r' ) | tar x --overwrite -C /mnt/cloud/operacoes/Administrators/rdps/"):
-            yield x
-        with zipfile.ZipFile('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/%s.zip'%(u, u), 'w') as zipf:
-            zipf.write('/mnt/cloud/operacoes/Administrators/rdps/%s/Desktop/SARD.rdp'%u, arcname='SARD.rdp')
-        for x in self.permissoes():
-            yield x
+        run(['sss_cache', '-U', '-G'], check=True)
+        os.makedirs(f'/home/{self.name}/Desktop/operacoes', mode=0o777, exist_ok=True)
+        mygroups = self.listgroups()
+        mygroups.remove('Domain Users')
+        for g in mygroups:
+            if os.path.islink(f'/home/{self.name}/Desktop/operacoes'):
+                break
+            src = f'/mnt/cloud/operacoes/{g}'
+            dst = f'/home/{self.name}/Desktop/operacoes/{g}'
+            if not os.path.islink(dst):
+                os.symlink(src, dst)
+        with open(f'/home/{self.name}/Desktop/SARD.rdp', 'w', encoding='utf-8') as f:
+            f.write(mkrdp(self.name))
+        rdp_path = f'/home/{self.name}/Desktop/SARD.rdp'
+        rdp_path2 = f'/mnt/cloud/operacoes/Administrators/rdps/{self.name}/Desktop/SARD.rdp'
+        rdp_path2_zip = os.path.dirname(rdp_path2) + f'{self.name}.zip'
+        os.makedirs(os.path.dirname(rdp_path2), exist_ok=True)
+        copyfile(rdp_path, rdp_path2)
+        with zipfile.ZipFile(rdp_path2_zip, 'w') as zipf:
+            zipf.write(rdp_path, arcname='SARD.rdp')
+        self.permissoes()
+
     def grupo(self, grupo=None):
-        u = self.name
-        self.ensure()
+        run(['sss_cache', '-U', '-G'], check=True)
         if grupo is None:
             grupo = self.args['GRUPO']
         op = Operacao(grupo)
         if not op.exists():
             raise Exception('Group doesn\'t exist')
-        if grupo in self.listgroups():
-            raise Exception('User already in this group.')
-        for x in command("smbldap-groupmod -m %s '%s'"%(u, grupo)):
-            yield x
-        if os.system('sss_cache -U -G'):
-            #if can not reset cache, wait a minute to refresh
-            for x in command('sleep 5'):
-                yield x
-        for x in self.preenchimento():
-            yield x
+        mygroups = self.listgroups()
+        if grupo in mygroups:
+            raise Exception(f'User {self.name} already in group {grupo}. Groups: {str(mygroups)}')
+        run(['sss_cache', '-U', '-G'], check=True)
+        run(['smbldap-groupmod', '-m', self.name, grupo], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
+        mygroups = self.listgroups()
+        assert grupo in mygroups
+        self.preenchimento()
+
     def permissoes(self):
-        self.ensure()
-        try:
-            for x in command('chmod -c o-rwx /home/"%s" '%self.name):
-                yield x
-            for x in command('chown -ch -R "%s":"%s" /home/"%s" '%((self.name,)*3)):
-                yield x
-        except:
-            pass
+        run(['sss_cache', '-U', '-G'], check=True)
+        uid = getpwnam(self.name).pw_uid
+        gid = getgrnam(self.name).gr_gid
+        os.chmod(f'/home/{self.name}',0o700)
+        for dirpath, dirnames, filenames in os.walk(f'/home/{self.name}', followlinks=False):
+            for x in dirnames + filenames:
+                fpath = os.path.join(dirpath, x)
+                if not os.path.exists(fpath):
+                    continue
+                os.chown(fpath, uid, gid)
+
     def random_password(self):
-        return '%d'%random.randint(100000, 999999)
-    def zerar_senha(self, password):
-        self.ensure()
-        u = self.name
+        return str(random.randint(100000, 999999))
+
+    def zerar_senha(self, password=None):
+        run(['sss_cache', '-U', '-G'], check=True)
         if password in ["", "string", None]:
             password = self.random_password()
-            yield 'new password: ' + password + '\n'
-        c = 'smbldap-passwd "%s" -p'%u
-        print c
-        yield c + '\n'
-        p = Popen(c, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
-        for line in p.communicate(input=b'%s\n%s'%(password,password)):
-            print line
-            yield line + '\n'
-        if p.returncode != 0:
-            raise Exception('Return code not zero.')
-        for x in command('smbldap-usermod --shadowMax 3650 "%s"'%u):
-            yield x
+        run(['smbldap-passwd', '-p', self.name], check=True, input=password, encoding='utf-8')
+        run(['smbldap-usermod', '--shadowMax', '3650', self.name], check=True)
+        return {
+            "senha": password
+        }

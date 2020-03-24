@@ -1,0 +1,61 @@
+version: '2.1'
+services:
+  ldap:
+    image: osixia/openldap:1.1.9
+    restart: always
+    hostname: ldap
+    environment:
+      HOSTNAME: "ldap"
+      LDAP_LOG_LEVEL: "0"
+      LDAP_ORGANISATION: "SETEC/SR/PF/RS"
+      LDAP_DOMAIN: "setecrs.dpf.gov.br"
+      LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
+      LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
+      LDAP_CONFIG_PASSWORD: "TESTPASSWORD"
+      LDAP_READONLY_USER: "false"
+      #LDAP_READONLY_USER_USERNAME: "readonly"
+      #LDAP_READONLY_USER_PASSWORD: "readonly"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_BACKEND: "hdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      KEEP_EXISTING_CONFIG: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+      LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
+    expose:
+      - 389
+      - 636
+  api:
+    build: ../docker
+    restart: always
+    links:
+      - ldap
+    environment:
+      SID: "S-1-5-21-682337471-1126014868-3524221191"
+      LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
+      LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
+      LANG: "en_US.UTF-8"
+    volumes:
+      - ../:/app/
+    ports:
+      - 5000:5000
+  tests:
+    build: ../docker
+    restart: "no"
+    links:
+      - api
+    environment:
+      SID: "S-1-5-21-682337471-1126014868-3524221191"
+      LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
+      LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
+      LANG: "en_US.UTF-8"
+    volumes:
+      - ../:/app/
+    command: ['python3', '-m', 'unittest', 'tests/integration.py']

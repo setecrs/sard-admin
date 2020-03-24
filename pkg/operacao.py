@@ -1,81 +1,94 @@
 import os
 import time
+from subprocess import run, PIPE, STDOUT
+import subprocess
+from threading import Thread
 
-from command import command
+from .command import command
+from .job import addJob
+
+jobs = {}
+history = []
 
 def listgroups():
-    return [x.split(':')[0] for x in os.popen('getent group').read().rstrip('\n').split('\n')]
+    run(['sss_cache', '-U', '-G'], check=True)
+    proc = run(['smbldap-grouplist'], stdout=PIPE, encoding='utf-8', check=True)
+    data = proc.stdout.strip().split('\n')
+    groups = [x for x in data[1:] if '|' in x]
+    groups = [x.split('|')[1].strip() for x in groups]
+    return groups
 
 class Operacao:
-    def __init__(self, name):
+    def __init__(self, name, history_timeout=3600):
         self.name = name
+        self.history_timeout = history_timeout
 
     def exists(self):
-        return not os.system("getent group '%s'"%self.name)
-
-    def ensure(self, tries=10):
-        if not self.exists():
-            if tries < 1:
-                raise Exception('group doesn\'t exist')
-            os.system('sss_cache -U -G')
-            time.sleep(10)
-            self.ensure(tries-1)
-
+        return self.name in listgroups()
 
     def users(self):
-        return [x for x in os.popen('getent group %s'%self.name).read().rstrip('\n').split(':')[-1].split(',')]
+        run(['sss_cache', '-U', '-G'], check=True)
+        proc = run(['smbldap-groupshow', self.name], stdout=PIPE, encoding='utf-8', check=True)
+        data = proc.stdout.strip().split('\n')
+        start = 'memberUid: '
+        users = []
+        for x in data:
+            if x.startswith(start):
+                x = x[len(start):]
+                users += [x.strip() for x in x.split(',')]
+        return users
 
     def criacao(self):
+        run(['sss_cache', '-U', '-G'], check=True)
         if self.exists():
             raise Exception('Group already exists')
         op = self.name
-        for x in command('smbldap-groupadd "%s"'%op):
-            yield x
-        try:
-            for x in command('mkdir /operacoes/"%s"'%(op)):
-                yield x
-        except:
-	    yield "Error making dir? Not a problem, let's move on.\n"
-        for x in self.permissoes():
-            yield x
+        compl = run(['smbldap-groupadd', '-a', op], stdout=PIPE, check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
+        os.makedirs(f'/operacoes/{op}' , mode=0o770, exist_ok=True)
+        self.permissoes()
+
+    def delete(self):
+        run(['sss_cache', '-U', '-G'], check=True)
+        compl = run(['smbldap-groupdel', self.name], check=True)
+
+    def permissoes(self, full=True):
+        op = self.name
+        def f():
+            if full:
+                cmd = ['chown', '-cR', '-h', f'root:{op}', f'/operacoes/{op}']
+                proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+                jobs[op]['output'] += proc.stdout
+
+                cmd = ['chmod', '-c', 'u+rX,g+rX,o-rwx', f'/operacoes/{op}']
+                proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+                jobs[op]['output'] += proc.stdout
+                
+                cmd = ['chmod', '-cR', 'a+rX', f'/operacoes/{op}']
+                proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+                jobs[op]['output'] += proc.stdout
+                
+                cmd = ['chmod', '-c', 'u+rX,g+rX,o-rwx', f'/operacoes/{op}']
+                proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+                jobs[op]['output'] += proc.stdout
+            
+            for dirpath, dirnames, filenames in os.walk(f'/operacoes/{op}'):
+                if 'indexador' in dirnames:
+                    dirnames.pop(dirnames.index('indexador'))
+                if 'Lista de Arquivos.csv' in filenames:
+                    files = [
+                        'indexador/tools/',
+                        'indexador/jre/bin/',
+                        'indexador/lib/',
+                    ]
+                    for f in filenames:
+                        if f.endswith('.exe'):
+                            files.append(f)
+                    for f in files:
+                        cmd = ['chmod', '-cR', 'a+x', f'{dirpath}/{f}']
+                        proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+                        jobs[op]['output'] += proc.stdout
+        addJob(jobs, op, history, f, self.history_timeout)
+
     def permissoesExe(self):
-        op = self.name
-        for raw in command('find /operacoes/"%s" -name indexador -prune -o -name "?ista de ?rquivos.csv" -print '%(op)):
-            for line in raw.strip().split('\n'):
-		case = line.rsplit('/',1)[0]
-                for subpath in ['*.exe', 'indexador/tools/', 'indexador/jre/bin/', 'indexador/lib/']:
-                    for x in ignore(point(command))('chmod -cR a+x "%s"/%s '%(case, subpath)):
-                        yield x
-    def permissoes(self):
-        self.ensure()
-        op = self.name
-        self.permissoesExe()
-        for x in ignore(point(command))('chown -cR -h root:"%s" /operacoes/"%s"'%(op, op)):
-            yield x
-        for x in ignore(point(command))('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-            yield x
-        for x in ignore(point(command))('chmod -cR a+rX            /operacoes/"%s"/*'%(op)):
-            yield x
-        for x in ignore(point(command))('chmod -c  u+rX,g+rX,o-rwx /operacoes/"%s"'%(op)):
-            yield x
-        yield "Ok"
-
-def point(f):
-  def handle(arg):
-    first=True
-    for x in f(arg):
-      if first:
-        first=False
-        yield x
-      else:
-        yield "."
-  return handle
-
-def ignore(f):
-  def handle(arg):
-    try:
-      for x in f(arg):
-	yield x
-    except Exception as e:
-      yield "Ignoring error %s\n"%e.message
-  return handle
+        return self.permissoes(False)

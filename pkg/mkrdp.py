@@ -1,5 +1,5 @@
 def mkrdp(user):
-    return """screen mode id:i:2
+    return f"""screen mode id:i:2
 use multimon:i:0
 desktopwidth:i:800
 desktopheight:i:600
@@ -40,5 +40,5 @@ gatewaycredentialssource:i:4
 gatewayprofileusagemethod:i:0
 promptcredentialonce:i:1
 use redirection server name:i:0
-username:s:SARD\%s
-"""%user
+username:s:SARD\{user}
+"""
