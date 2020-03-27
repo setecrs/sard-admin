@@ -52,6 +52,8 @@ class Operacao:
         run(['sss_cache', '-U', '-G'], check=True)
 
     def permissoes(self, full=True):
+        if self.name in jobs:
+            raise Exception('Another permission job is already running')
         run(['sss_cache', '-U', '-G'], check=True)
         op = self.name
         def f():
