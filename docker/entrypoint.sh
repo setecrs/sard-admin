@@ -41,6 +41,7 @@ config_file_version = 2
 domains = default
 
 [nss]
+entry_negative_timeout = 0
 
 [pam]
 

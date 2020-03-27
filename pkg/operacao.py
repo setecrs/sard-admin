@@ -11,7 +11,6 @@ jobs = {}
 history = []
 
 def listgroups():
-    run(['sss_cache', '-U', '-G'], check=True)
     proc = run(['smbldap-grouplist'], stdout=PIPE, encoding='utf-8', check=True)
     data = proc.stdout.strip().split('\n')
     groups = [x for x in data[1:] if '|' in x]
@@ -27,7 +26,6 @@ class Operacao:
         return self.name in listgroups()
 
     def users(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         proc = run(['smbldap-groupshow', self.name], stdout=PIPE, encoding='utf-8', check=True)
         data = proc.stdout.strip().split('\n')
         start = 'memberUid: '
@@ -39,7 +37,6 @@ class Operacao:
         return users
 
     def criacao(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         if self.exists():
             raise Exception('Group already exists')
         op = self.name
@@ -49,7 +46,6 @@ class Operacao:
         self.permissoes()
 
     def delete(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         compl = run(['smbldap-groupdel', self.name], check=True)
 
     def permissoes(self, full=True):

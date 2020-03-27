@@ -1,8 +1,7 @@
 import os
 import random
-import time
 import zipfile
-from subprocess import PIPE, STDOUT, run
+from subprocess import PIPE, run
 from shutil import copyfile
 from pwd import getpwnam
 from grp import getgrnam
@@ -11,7 +10,6 @@ from .operacao import Operacao
 from .mkrdp import mkrdp
 
 def listusers():
-    run(['sss_cache', '-U', '-G'], check=True)
     compl = run(['smbldap-userlist'], stdout=PIPE, encoding='utf-8', check=True)
     data = compl.stdout.split('\n')
     users = [x for x in data[1:] if '|' in x]
@@ -25,7 +23,6 @@ class Usuario:
         self.history_timeout = history_timeout
 
     def listgroups(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         proc = run(['id', '-Gnz', self.name], check=True, stdout=PIPE, encoding='utf-8')
         groups = proc.stdout.strip('\x00').split('\x00')
         return groups
@@ -41,12 +38,10 @@ class Usuario:
             run(['kill', pid], check=True)
 
     def delete(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         run(['smbldap-userdel', self.name], check=True)
         run(['smbldap-groupdel', self.name], check=True)
 
     def criacao(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         if self.name in listusers():
             raise Exception('user already exists')
         run(['smbldap-groupadd', '-a', self.name], check=True)
@@ -59,7 +54,6 @@ class Usuario:
         return self.zerar_senha()
 
     def preenchimento(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         os.makedirs(f'/home/{self.name}/Desktop/operacoes', mode=0o777, exist_ok=True)
         mygroups = self.listgroups()
         mygroups.remove('Domain Users')
@@ -82,7 +76,6 @@ class Usuario:
         self.permissoes()
 
     def grupo(self, grupo=None):
-        run(['sss_cache', '-U', '-G'], check=True)
         if grupo is None:
             grupo = self.args['GRUPO']
         op = Operacao(grupo)
@@ -91,7 +84,6 @@ class Usuario:
         mygroups = self.listgroups()
         if grupo in mygroups:
             raise Exception(f'User {self.name} already in group {grupo}. Groups: {str(mygroups)}')
-        run(['sss_cache', '-U', '-G'], check=True)
         run(['smbldap-groupmod', '-m', self.name, grupo], check=True)
         run(['sss_cache', '-U', '-G'], check=True)
         mygroups = self.listgroups()
@@ -99,7 +91,6 @@ class Usuario:
         self.preenchimento()
 
     def permissoes(self):
-        run(['sss_cache', '-U', '-G'], check=True)
         uid = getpwnam(self.name).pw_uid
         gid = getgrnam(self.name).gr_gid
         os.chmod(f'/home/{self.name}',0o700)
@@ -114,7 +105,6 @@ class Usuario:
         return str(random.randint(100000, 999999))
 
     def zerar_senha(self, password=None):
-        run(['sss_cache', '-U', '-G'], check=True)
         if password in ["", "string", None]:
             password = self.random_password()
         run(['smbldap-passwd', '-p', self.name], check=True, input=password, encoding='utf-8')
