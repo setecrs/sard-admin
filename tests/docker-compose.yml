@@ -2,7 +2,7 @@ version: '2.1'
 services:
   ldap:
     image: osixia/openldap:1.1.9
-    restart: always
+    restart: "no"
     hostname: ldap
     environment:
       HOSTNAME: "ldap"
@@ -34,7 +34,7 @@ services:
       - 636
   api:
     build: ../docker
-    restart: always
+    restart: "always"
     links:
       - ldap
     environment:
@@ -46,6 +46,7 @@ services:
       - ../:/app/
     ports:
       - 5000:5000
+    command: ['bash', '-c', 'while ! getent group Replicators; do sleep 0.1; done; /app/sardrest.py']
   tests:
     build: ../docker
     restart: "no"
@@ -58,4 +59,4 @@ services:
       LANG: "en_US.UTF-8"
     volumes:
       - ../:/app/
-    command: ['python3', '-m', 'unittest', 'tests/integration.py']
+    command: ['bash', '-c', 'while ! curl -f http://api:5000/grupo/; do sleep 0.1; done; python3 -m unittest tests/integration.py']
