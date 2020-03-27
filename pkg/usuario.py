@@ -23,7 +23,7 @@ class Usuario:
         self.history_timeout = history_timeout
 
     def listgroups(self):
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         proc = run(['id', '-Gnz', self.name], check=True, stdout=PIPE, encoding='utf-8')
         groups = proc.stdout.strip('\x00').split('\x00')
         return groups
@@ -32,7 +32,7 @@ class Usuario:
         return self.name in listusers()
 
     def kill(self):
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         proc = run(['smbstatus', '-bpu', self.name], stdout=PIPE, check=True, encoding='utf-8')
         lines = proc.stdout.strip().split('\n')
         for line in lines[1:]:
@@ -42,14 +42,14 @@ class Usuario:
     def delete(self):
         run(['smbldap-userdel', self.name], check=True)
         run(['smbldap-groupdel', self.name], check=True)
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
 
     def criacao(self):
         if self.name in listusers():
             raise Exception('user already exists')
         run(['smbldap-groupadd', '-a', self.name], check=True)
         run(['smbldap-useradd', '-a', '-g', self.name, '-s', '/bin/false','-m', self.name], check=True)
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         assert self.name in listusers()
         assert self.name in self.listgroups()
         self.grupo('Domain Users')
@@ -57,7 +57,7 @@ class Usuario:
         return self.zerar_senha()
 
     def preenchimento(self):
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         os.makedirs(f'/home/{self.name}/Desktop/operacoes', mode=0o777, exist_ok=True)
         mygroups = self.listgroups()
         mygroups.remove('Domain Users')
@@ -89,13 +89,13 @@ class Usuario:
         if grupo in mygroups:
             raise Exception(f'User {self.name} already in group {grupo}. Groups: {str(mygroups)}')
         run(['smbldap-groupmod', '-m', self.name, grupo], check=True)
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         mygroups = self.listgroups()
         assert grupo in mygroups
         self.preenchimento()
 
     def permissoes(self):
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         uid = getpwnam(self.name).pw_uid
         gid = getgrnam(self.name).gr_gid
         os.chmod(f'/home/{self.name}',0o700)
@@ -114,7 +114,7 @@ class Usuario:
             password = self.random_password()
         run(['smbldap-passwd', '-p', self.name], check=True, input=password, encoding='utf-8')
         run(['smbldap-usermod', '--shadowMax', '3650', self.name], check=True)
-        run(['sss_cache', '-E'], check=True)
+        run(['sss_cache', '-U', '-G'], check=True)
         return {
             "senha": password
         }
