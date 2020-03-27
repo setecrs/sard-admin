@@ -2,6 +2,12 @@
 
 : ${LDAP_ADMIN_PASSWORD?-LDAP_ADMIN_PASSWORD not set}
 : ${LDAP_BASE_DN?-LDAP_BASE_DN not set}
+: ${LDAP_SERVER?-LDAP_SERVER not set}
+
+sed -i -e 's|passdb backend.*|passdb backend = ldapsam:"ldap://'${LDAP_SERVER}'"|' /etc/samba/smb.conf
+
+sed -i -e 's|masterLDAP=.*|masterLDAP="'${LDAP_SERVER}'"|' /etc/smbldap-tools/smbldap.conf
+sed -i -e 's|slaveLDAP=.*|slaveLDAP="'${LDAP_SERVER}'"|' /etc/smbldap-tools/smbldap.conf
 
 cat > /etc/smbldap-tools/smbldap_bind.conf <<EOF
 slaveDN="cn=admin,${LDAP_BASE_DN}"
@@ -21,7 +27,7 @@ ldap_search_base = dc=setecrs,dc=dpf,dc=gov,dc=br
 id_provider = ldap
 auth_provider = ldap
 chpass_provider = ldap
-ldap_uri = ldap://ldap/
+ldap_uri = ldap://${LDAP_SERVER}/
 ldap_tls_cacertdir = /etc/openldap/cacerts
 ldap_id_use_start_tls = False
 entry_cache_timeout = 5
