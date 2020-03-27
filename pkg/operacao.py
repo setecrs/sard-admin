@@ -41,14 +41,16 @@ class Operacao:
             raise Exception('Group already exists')
         op = self.name
         compl = run(['smbldap-groupadd', '-a', op], stdout=PIPE, check=True)
-        run(['sss_cache', '-U', '-G'], check=True)
+        run(['sss_cache', '-E'], check=True)
         os.makedirs(f'/operacoes/{op}' , mode=0o770, exist_ok=True)
         self.permissoes()
 
     def delete(self):
         compl = run(['smbldap-groupdel', self.name], check=True)
+        run(['sss_cache', '-E'], check=True)
 
     def permissoes(self, full=True):
+        run(['sss_cache', '-E'], check=True)
         op = self.name
         def f():
             if full:

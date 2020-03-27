@@ -41,7 +41,9 @@ config_file_version = 2
 domains = default
 
 [nss]
+enum_cache_timeout = 0
 entry_negative_timeout = 0
+memcache_timeout = 0
 
 [pam]
 
