@@ -46,7 +46,6 @@ services:
       - ../:/app/
     ports:
       - 5000:5000
-    command: ['bash', '-c', 'while ! getent group Replicators; do sleep 0.1; done; /app/sardrest.py']
   tests:
     build: ../docker
     restart: "no"
