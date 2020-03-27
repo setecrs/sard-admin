@@ -3,7 +3,7 @@ name: tests
 on: ['push']
 
 jobs:
-  integration:
+  integration-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,6 +16,6 @@ jobs:
         run: docker-compose up -d ldap api
         working-directory: ./tests
 
-      - name: docker-compose up --abort-on-container-exit
-        run: docker-compose up --abort-on-container-exit
+      - name: docker-compose up --abort-on-container-exit tests
+        run: docker-compose up --abort-on-container-exit tests
         working-directory: ./tests
