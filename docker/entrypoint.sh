@@ -77,6 +77,12 @@ then
   smbpasswd -w $LDAP_ADMIN_PASSWORD
 fi
 
+# wait for ldap
+while ! smbldap-userlist
+do
+  sleep 0.1
+done
+
 # different passwords on purpose, so we don't change the root password
 (echo 1; echo 2) | smbldap-populate
 
