@@ -60,4 +60,4 @@ services:
       LANG: "en_US.UTF-8"
     volumes:
       - ../:/app/
-    command: ['bash', '-c', 'while ! curl -f http://api:5000/grupo/; do sleep 0.1; done; python3 -m unittest tests/integration.py']
+    command: ['bash', '-c', 'while ! curl -f http://api:5000/group/; do sleep 0.1; done; python3 -m unittest -f tests/integration.py']

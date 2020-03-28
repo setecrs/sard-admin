@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
 : ${LDAP_ADMIN_PASSWORD?-LDAP_ADMIN_PASSWORD not set}
 : ${LDAP_BASE_DN?-LDAP_BASE_DN not set}
@@ -81,7 +81,7 @@ then
 fi
 
 # wait for ldap
-while ! smbldap-userlist
+while ! (( `curl ${LDAP_SERVER}:389; echo $?` != 52 ))
 do
   sleep 0.1
 done

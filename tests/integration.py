@@ -1,21 +1,17 @@
-import os, sys
+import os
+import sys
 import unittest
-import requests
-import time
-from threading import Thread
-from pathlib import Path
-from grp import getgrnam
 from subprocess import run
-from pwd import getpwnam
-from grp import getgrnam
+
+from pathlib import Path
+import requests
 
 sys.path.append(os.path.abspath('..'))
 
-from pkg.operacao import Operacao, listgroups
-from pkg.usuario import Usuario, listusers
-import pkg.operacao
+from sardadmin.group import Group, history
+from sardadmin.user import User
 
-grupos = [
+groups = [
     'Domain Admins',
     'Domain Users',
     'Domain Guests',
@@ -27,27 +23,26 @@ grupos = [
     'Replicators',
 ]
 
-usuarios = [
+users = [
     'root',
     'nobody',
 ]
 
 def clean():
-    run(['sss_cache', '-U', '-G'], check=True)
-    for x in listusers():
-        if not x in usuarios:
-            Usuario(x).delete()
-    for x in listgroups():
-        if not x in grupos:
-            Operacao(x).delete()    
+    for x in User.listAll():
+        if not x in users:
+            User(x).delete()
+    for x in Group.listAll():
+        if not x in groups:
+            Group(x).delete()    
 
 # extra measure to avoid running this in production
-assert set(grupos) == set(listgroups())
+assert set(groups) == set(Group.listAll())
 
 # extra measure to avoid running this in production
-assert set(usuarios) == set(listusers())
+assert set(users) == set(User.listAll())
 
-class UsuarioTest(unittest.TestCase):
+class UserTest(unittest.TestCase):
     def setUp(self):
         clean()
 
@@ -55,37 +50,32 @@ class UsuarioTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        data = listusers()
-        self.assertListEqual(data, usuarios)
+        self.assertListEqual(User.listAll(), users)
 
-    def test_criacao_delete(self):
-        self.assertListEqual(listusers(), usuarios)
-        Usuario('criacao_delete', history_timeout=0.1).criacao()
-        self.assertListEqual(listusers(), usuarios + ['criacao_delete'])
-        Usuario('criacao_delete').delete()
-        self.assertListEqual(listusers(), usuarios)
-        self.assertListEqual(listgroups(), grupos)
+    def test_criate_delete(self):
+        self.assertListEqual(User.listAll(), users)
+        User('criate_delete').create()
+        self.assertListEqual(User.listAll(), users + ['criate_delete'])
+        User('criate_delete').delete()
+        self.assertListEqual(User.listAll(), users)
+        self.assertListEqual(Group.listAll(), groups)
     
-    def test_permissoes(self):
-        mypath = '/home/permissoes/a/b/c/d/e/f'
+    def test_permissions(self):
+        mypath = '/home/permissions/a/b/c/d/e/f'
         os.makedirs(mypath, mode=0o000)
-        Usuario('permissoes', history_timeout=0.1).criacao()
-        uid = getpwnam('permissoes').pw_uid
-        gid = getgrnam('permissoes').gr_gid
+        User('permissions').create()
+        uid = User('permissions').uid()
+        gid = Group('permissions').gid()
         self.assertEqual(os.stat(mypath).st_gid, gid)
         self.assertEqual(os.stat(mypath).st_uid, uid)
         os.removedirs(mypath)
 
-    def test_preenchimento(self):
-        Usuario('preenchimento', history_timeout=0.1).criacao()
-        rdp_path = f'/home/preenchimento/Desktop/SARD.rdp'
-        rdp_path2 = f'/mnt/cloud/operacoes/Administrators/rdps/preenchimento/Desktop/SARD.rdp'
-        rdp_path2_zip = os.path.dirname(rdp_path2) + f'preenchimento.zip'
-        for x in [rdp_path, rdp_path2, rdp_path2_zip]:
-            self.assertEqual(os.path.exists(x), True)
+    def test_populateHome(self):
+        User('populateHome').create()
+        self.assertEqual(os.path.exists('/home/populateHome/Desktop/operacoes'), True)
 
 
-class OperacaoTest(unittest.TestCase):
+class GroupTest(unittest.TestCase):
     def setUp(self):
         clean()
 
@@ -93,138 +83,86 @@ class OperacaoTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        data = listgroups()
-        self.assertListEqual(data, grupos)
+        self.assertListEqual(Group.listAll(), groups)
 
-    def test_criacao_delete(self):
-        self.assertListEqual(listgroups(), grupos)
-        Operacao('criacao_delete', history_timeout=0.1).criacao()
-        self.assertListEqual(listgroups(), grupos + ['criacao_delete'])
-        Operacao('criacao_delete').delete()
-        self.assertListEqual(listgroups(), grupos)
+    def test_criate_delete(self):
+        self.assertListEqual(Group.listAll(), groups)
+        Group('criate_delete', history_timeout=0.1).create()
+        self.assertListEqual(Group.listAll(), groups + ['criate_delete'])
+        Group('criate_delete').delete()
+        self.assertListEqual(Group.listAll(), groups)
 
     def test_folder(self):
-        Operacao('folder', history_timeout=0.1).criacao()
-        self.assertListEqual(listgroups(), grupos + ['folder'])
-        self.assertEqual(os.path.exists('/operacoes/folder'), True) 
+        Group('folder', history_timeout=0.1).create()
+        self.assertListEqual(Group.listAll(), groups + ['folder'])
+        history[-1]['thread'].join()
+        self.assertEqual(os.path.exists('/operacoes/folder'), True)
         stat = os.stat('/operacoes/folder')
-        self.assertEqual(stat.st_mode, 0o40750)
+        self.assertEqual(stat.st_mode, 0o40550)
 
     def test_users(self):
-        Operacao('users', history_timeout=0.1).criacao()
-        Usuario('usersA', history_timeout=0.1).criacao()
-        Usuario('usersA').grupo('users')
-        Usuario('usersB', history_timeout=0.1).criacao()
-        Usuario('usersB').grupo('users')
-        users = Operacao('users').users()
-        self.assertListEqual(users, ['usersA', 'usersB'])
+        Group('users', history_timeout=0.1).create()
+        User('usersA').create()
+        User('usersA').enterGroup('users')
+        User('usersB').create()
+        User('usersB').enterGroup('users')
+        myusers = Group('users').users()
+        self.assertListEqual(myusers, ['usersA', 'usersB'])
     
     def wait_history(self):
         while True:
-            job = pkg.operacao.history[-1]
+            job = history[-1]
             running = job['running']
             if not running:
                 break
+            job['thread'].join()
 
-    def test_permissoes(self, mode=0o000):
-        if os.path.exists('/operacoes/permissoes'):
-            run(['rm', '-r', '/operacoes/permissoes'])
-        Operacao('permissoes',history_timeout=0.1).criacao()
+    def test_permissions(self, mode=0o000):
+        if os.path.exists('/operacoes/permissions'):
+            run(['rm', '-r', '/operacoes/permissions'], check=True)
+        Group('permissions', history_timeout=0.1).create()
         self.wait_history()
 
         dirs = [
-            '/operacoes/permissoes/a/b/c',
+            '/operacoes/permissions/a/b/c',
         ]
         files = [
-            '/operacoes/permissoes/file.dd',
-            '/operacoes/permissoes/log',
-            '/operacoes/permissoes/SARD/Lista de Arquivos.csv',
-            '/operacoes/permissoes/SARD/indexador/somedir/java.jar',
+            '/operacoes/permissions/file.dd',
+            '/operacoes/permissions/log',
+            '/operacoes/permissions/SARD/Lista de Arquivos.csv',
+            '/operacoes/permissions/SARD/indexador/somedir/java.jar',
         ]
         files2 = [
-            '/operacoes/permissoes/SARD/indexador/tools/file.txt',
-            '/operacoes/permissoes/SARD/indexador/jre/bin/file.txt',
-            '/operacoes/permissoes/SARD/indexador/lib/file.txt',
-            '/operacoes/permissoes/SARD/a.exe',
+            '/operacoes/permissions/SARD/indexador/tools/file.txt',
+            '/operacoes/permissions/SARD/indexador/jre/bin/file.txt',
+            '/operacoes/permissions/SARD/indexador/lib/file.txt',
+            '/operacoes/permissions/SARD/a.exe',
         ]
         uid = 0
-        gid = getgrnam('permissoes').gr_gid
+        gid = Group('permissions').gid()
         for d in dirs:
             os.makedirs(d, mode=mode)
             os.chown(d, 13, 13)
-        for f in files + files2:        
+        for f in files + files2:
             os.makedirs(os.path.dirname(f), mode=mode, exist_ok=True)
             Path(f).touch(mode=mode)
             os.chown(f, 13, 13)
-        Operacao('permissoes', history_timeout=0.1).permissoes()
+        Group('permissions', history_timeout=0.1).permissions()
         self.wait_history()
 
         for d in dirs:
-            self.assertEqual(os.stat(d).st_gid, gid, d)
-            self.assertEqual(os.stat(d).st_uid, uid, d)
             self.assertEqual(os.stat(d).st_mode, 0o40555, d)
         for f in files:
             self.assertEqual(os.stat(f).st_mode, 0o100444, f)
-            self.assertEqual(os.stat(f).st_uid, uid, f)
-            self.assertEqual(os.stat(f).st_gid, gid, f)
         for d in [
-            '/operacoes/permissoes',
+            '/operacoes/permissions',
         ]:
-            self.assertEqual(os.stat(d).st_mode, 0o40750, d)
+            self.assertEqual(os.stat(d).st_gid, gid, d)
+            self.assertEqual(os.stat(d).st_uid, uid, d)
+            self.assertEqual(os.stat(d).st_mode, 0o40550, d)
         for f in files2:
             self.assertEqual(os.stat(f).st_mode, 0o100555, f)
-            self.assertEqual(os.stat(f).st_uid, uid, f)
-            self.assertEqual(os.stat(f).st_gid, gid, f)
 
-    def test_permissoesexe(self, mode=0o000):
-        if os.path.exists('/operacoes/permissoesexe'):
-            run(['rm', '-r', '/operacoes/permissoesexe'])
-        Operacao('permissoesexe',history_timeout=0.1).criacao()
-        self.wait_history()
-
-        dirs = [
-            '/operacoes/permissoesexe/a/b/c',
-        ]
-        files = [
-            '/operacoes/permissoesexe/file.dd',
-            '/operacoes/permissoesexe/log',
-            '/operacoes/permissoesexe/SARD/Lista de Arquivos.csv',
-            '/operacoes/permissoesexe/SARD/indexador/somedir/java.jar',
-        ]
-        files2 = [
-            '/operacoes/permissoesexe/SARD/indexador/tools/file.txt',
-            '/operacoes/permissoesexe/SARD/indexador/jre/bin/file.txt',
-            '/operacoes/permissoesexe/SARD/indexador/lib/file.txt',
-            '/operacoes/permissoesexe/SARD/a.exe',
-        ]
-        uid = 0
-        gid = getgrnam('permissoesexe').gr_gid
-        for d in dirs:
-            os.makedirs(d, mode=mode)
-            os.chown(d, 13, 13)
-        for f in files + files2:        
-            os.makedirs(os.path.dirname(f), mode=mode, exist_ok=True)
-            Path(f).touch(mode=mode)
-            os.chown(f, 13, 13)
-        Operacao('permissoesexe',history_timeout=0.1).permissoesExe()
-        self.wait_history()
-        
-        for d in dirs:
-            self.assertEqual(os.stat(d).st_gid, 13, d)
-            self.assertEqual(os.stat(d).st_uid, 13, d)
-            self.assertEqual(os.stat(d).st_mode, 0o40000, d)
-        for f in files:
-            self.assertEqual(os.stat(f).st_mode, 0o100000, f)
-            self.assertEqual(os.stat(f).st_uid, 13, f)
-            self.assertEqual(os.stat(f).st_gid, 13, f)
-        for d in [
-            '/operacoes/permissoesexe',
-        ]:
-            self.assertEqual(os.stat(d).st_mode, 0o40750, d)
-        for f in files2:
-            self.assertEqual(os.stat(f).st_mode, 0o100111, f)
-            self.assertEqual(os.stat(f).st_uid, 13, f)
-            self.assertEqual(os.stat(f).st_gid, 13, f)
 
 class APIGroupTest(unittest.TestCase):
     def setUp(self):
@@ -234,60 +172,53 @@ class APIGroupTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        resp = requests.get('http://api:5000/grupo/')
+        resp = requests.get('http://api:5000/group/')
         data = resp.json()
-        self.assertDictEqual(data, {"grupos": grupos})
+        self.assertDictEqual(data, {"groups": groups})
 
     def test_add(self):
-        resp = requests.post('http://api:5000/grupo/add')
+        resp = requests.post('http://api:5000/group/add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/grupo/')
+        resp = requests.get('http://api:5000/group/')
         data = resp.json()
-        self.assertIn("add", data['grupos'])
-        self.assertListEqual(listgroups(), grupos + ['add'])
-        Operacao('add').delete()
-        self.assertListEqual(listgroups(), grupos)
+        self.assertIn("add", data['groups'])
+        self.assertListEqual(Group.listAll(), groups + ['add'])
+        Group('add').delete()
+        self.assertListEqual(Group.listAll(), groups)
 
     def test_list_members(self):
-        resp = requests.post('http://api:5000/grupo/list_members')
+        resp = requests.post('http://api:5000/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userAm')
+        resp = requests.post('http://api:5000/user/userAm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userAm/grupo/list_members')
+        resp = requests.post('http://api:5000/user/userAm/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userBm')
+        resp = requests.post('http://api:5000/user/userBm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userBm/grupo/list_members')
+        resp = requests.post('http://api:5000/user/userBm/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/grupo/list_members')
+        resp = requests.get('http://api:5000/group/list_members')
         data = resp.json()
         self.assertListEqual(data, ['userAm', 'userBm'])
 
     def test_double_add(self):
-        resp = requests.post('http://api:5000/grupo/double_add')
+        resp = requests.post('http://api:5000/group/double_add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/grupo/double_add')
+        resp = requests.post('http://api:5000/group/double_add')
         self.assertEqual(resp.ok, False)
     
     def test_double_perm(self):
-        resp = requests.post('http://api:5000/grupo/double_perm')
+        resp = requests.post('http://api:5000/group/double_perm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/grupo/double_perm/permissoes')
-        self.assertEqual(resp.ok, False)
-
-    def test_double_perm_exe(self):
-        resp = requests.post('http://api:5000/grupo/double_permexe')
-        self.assertEqual(resp.text, "")
-        self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/grupo/double_permexe/permissoesexe')
+        resp = requests.post('http://api:5000/group/double_perm/permissions')
         self.assertEqual(resp.ok, False)
 
 class APIUserTest(unittest.TestCase):
@@ -298,55 +229,55 @@ class APIUserTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        resp = requests.get('http://api:5000/usuario/')
+        resp = requests.get('http://api:5000/user/')
         data = resp.json()
-        self.assertDictEqual(data, {"usuarios": usuarios})
+        self.assertDictEqual(data, {"users": users})
 
     def test_add(self):
-        resp = requests.post('http://api:5000/usuario/addU')
+        resp = requests.post('http://api:5000/user/addU')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/usuario/')
+        resp = requests.get('http://api:5000/user/')
         data = resp.json()
-        self.assertIn("addU", data['usuarios'])
-        self.assertListEqual(listusers(), usuarios + ['addU'])
-        Usuario('addU').delete()
-        self.assertListEqual(listusers(), usuarios)
-        self.assertListEqual(listgroups(), grupos)
+        self.assertIn("addU", data['users'])
+        self.assertListEqual(User.listAll(), users + ['addU'])
+        User('addU').delete()
+        self.assertListEqual(User.listAll(), users)
+        self.assertListEqual(Group.listAll(), groups)
 
     def test_add_listgroups(self):
-        resp = requests.post('http://api:5000/grupo/groupA')
+        resp = requests.post('http://api:5000/group/groupA')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/grupo/groupB')
+        resp = requests.post('http://api:5000/group/groupB')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/grupo/groupC')
+        resp = requests.post('http://api:5000/group/groupC')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userList')
+        resp = requests.post('http://api:5000/user/userList')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userList/grupo/groupA')
+        resp = requests.post('http://api:5000/user/userList/group/groupA')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userList/grupo/groupB')
+        resp = requests.post('http://api:5000/user/userList/group/groupB')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/userList/grupo/groupC')
+        resp = requests.post('http://api:5000/user/userList/group/groupC')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/usuario/userList')
+        resp = requests.get('http://api:5000/user/userList')
         data = resp.json()
         self.assertListEqual(
-            sorted(data['grupos']),
+            sorted(data['groups']),
             sorted(['groupA', 'groupB', 'groupC', 'userList', 'Domain Users']))
 
     def test_double_add(self):
-        resp = requests.post('http://api:5000/usuario/double_add')
+        resp = requests.post('http://api:5000/user/double_add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/double_add')
+        resp = requests.post('http://api:5000/user/double_add')
         self.assertEqual(resp.ok, False)
     
 class APIPasswordTest(unittest.TestCase):
@@ -357,11 +288,11 @@ class APIPasswordTest(unittest.TestCase):
         clean()
 
     def test_change(self):
-        resp = requests.post('http://api:5000/usuario/change')
+        resp = requests.post('http://api:5000/user/change')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/usuario/change/zerar_senha', json={
+        resp = requests.post('http://api:5000/user/change/reset_password', json={
             "password": "1234"
         })
-        self.assertDictEqual(resp.json(), {"senha": "1234"})
+        self.assertDictEqual(resp.json(), {"password": "1234"})
         self.assertEqual(resp.ok, True)
