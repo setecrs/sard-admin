@@ -81,9 +81,14 @@ then
 fi
 
 # wait for ldap
-while ! (( `curl ${LDAP_SERVER}:389; echo $?` != 52 ))
+COUNT=0
+while (( `curl ${LDAP_SERVER}:389; echo $?` == 52 ))
 do
   sleep 0.1
+  if (( COUNT++ > 10 ))
+  then
+    exit 1
+  fi
 done
 
 # different passwords on purpose, so we don't change the root password
