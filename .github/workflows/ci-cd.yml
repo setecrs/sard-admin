@@ -1,4 +1,4 @@
-name: cdi-cd
+name: ci-cd
 
 on: ['push']
 
