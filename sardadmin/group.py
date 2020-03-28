@@ -1,21 +1,10 @@
 import os
-import sys
-import time
 from subprocess import run, PIPE
 
 from .job import addJob
 
 jobs = {}
 history = []
-
-def timeit(f):
-    def g(*args, **kwargs):
-        start = time.time()
-        result = f(*args, **kwargs)
-        end = time.time()
-        print(end-start, 'Group', f.__name__, file=sys.stderr)
-        return result
-    return g
 
 class Group:
     @staticmethod
@@ -34,7 +23,6 @@ class Group:
         self.name = name
         self.history_timeout = history_timeout
 
-    @timeit
     def gid(self):
         "GID of the group"
         proc = run(['smbldap-groupshow', self.name], check=True, encoding='utf-8', stdout=PIPE)
@@ -45,12 +33,10 @@ class Group:
                 return int(line[len(start):])
         raise Exception(f'gid not found for {self.name}')
 
-    @timeit
     def exists(self):
         "Returns whether the group exists in the LDAP database"
         return self.name in Group.listAll()
 
-    @timeit
     def users(self):
         "List the members of the group"
         proc = run(['smbldap-groupshow', self.name], stdout=PIPE, encoding='utf-8', check=True)
@@ -63,7 +49,6 @@ class Group:
                 users += [x.strip() for x in x.split(',')]
         return users
 
-    @timeit
     def create(self):
         """Creates a new group and creates the group folder."""
         if self.exists():
@@ -73,14 +58,12 @@ class Group:
         os.makedirs(f'/operacoes/{op}', mode=0o770, exist_ok=True)
         self.permissions()
 
-    @timeit
     def delete(self):
         "Deletes the group"
         if self.name in jobs:
             jobs[self.name]['thread'].join()
         run(['smbldap-groupdel', self.name], check=True)
 
-    @timeit
     def permissions(self):
         """Adjusts the group folder permissions.
         The main group folder is only accessible by group members.

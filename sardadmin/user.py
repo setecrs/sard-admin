@@ -1,19 +1,8 @@
 import os
 import random
-import time
-import sys
 from subprocess import PIPE, run
 
 from .group import Group
-
-def timeit(f):
-    def g(*args, **kwargs):
-        start = time.time()
-        result = f(*args, **kwargs)
-        end = time.time()
-        print(end-start, 'User', f.__name__, file=sys.stderr)
-        return result
-    return g
 
 class User:
     @staticmethod
@@ -29,7 +18,6 @@ class User:
         "Prepare a User instance, without touching the database"
         self.name = name
 
-    @timeit
     def uid(self):
         "UID of user"
         proc = run(['smbldap-usershow', self.name], check=True, encoding='utf-8', stdout=PIPE)
@@ -40,12 +28,10 @@ class User:
                 return int(line[len(start):])
         raise Exception(f'uid not found for {self.name}')
 
-    @timeit
     def exists(self):
         "Returns whether the user exists in the LDAP database"
         return self.name in User.listAll()
 
-    @timeit
     def groups(self):
         "List of groups of which user is a member"
         result = []
@@ -54,9 +40,8 @@ class User:
                 result.append(group)
         return result
 
-    @timeit
     def create(self, password=None):
-        """Creates a new user, creates a group with the same name, 
+        """Creates a new user, creates a group with the same name,
         adds the user to the 'Domain Users' group, fill the home directory,
         and returns the new password."""
         if self.name in User.listAll():
@@ -67,13 +52,11 @@ class User:
         self.populateHome()
         return self.resetPassword(password)
 
-    @timeit
     def delete(self):
         "Delete user and the group with its name"
         run(['smbldap-userdel', self.name], check=True)
         run(['smbldap-groupdel', self.name], check=True)
 
-    @timeit
     def enterGroup(self, group):
         "Adds the user to the group"
         op = Group(group)
@@ -84,7 +67,6 @@ class User:
         run(['smbldap-groupmod', '-m', self.name, group], check=True)
         self.populateHome()
 
-    @timeit
     def resetPassword(self, password=None):
         """Resets the user password.
         If the password is None or '', a random password is created.
@@ -95,12 +77,11 @@ class User:
         run(['smbldap-usermod', '--shadowMax', '3650', self.name], check=True)
         return password
 
-    @timeit
     def permissions(self):
         "Adjusts the user's home permissions"
         uid = self.uid()
         gid = Group(self.name).gid()
-        os.chmod(f'/home/{self.name}',0o700)
+        os.chmod(f'/home/{self.name}', 0o700)
         for dirpath, dirnames, filenames in os.walk(f'/home/{self.name}', followlinks=False):
             for x in dirnames + filenames:
                 fpath = os.path.join(dirpath, x)
@@ -108,7 +89,6 @@ class User:
                     continue
                 os.chown(fpath, uid, gid)
 
-    @timeit
     def populateHome(self):
         "Populates the user's home directory with links to their groups"
         os.makedirs(f'/home/{self.name}/Desktop/operacoes', mode=0o777, exist_ok=True)
@@ -126,4 +106,3 @@ class User:
 def random_password():
     "Returns a random password"
     return str(random.randint(100000, 999999))
-

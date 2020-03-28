@@ -34,7 +34,7 @@ def clean():
             User(x).delete()
     for x in Group.listAll():
         if not x in groups:
-            Group(x).delete()    
+            Group(x).delete()
 
 # extra measure to avoid running this in production
 assert set(groups) == set(Group.listAll())
@@ -59,7 +59,7 @@ class UserTest(unittest.TestCase):
         User('criate_delete').delete()
         self.assertListEqual(User.listAll(), users)
         self.assertListEqual(Group.listAll(), groups)
-    
+
     def test_permissions(self):
         mypath = '/home/permissions/a/b/c/d/e/f'
         os.makedirs(mypath, mode=0o000)
@@ -108,7 +108,7 @@ class GroupTest(unittest.TestCase):
         User('usersB').enterGroup('users')
         myusers = Group('users').users()
         self.assertListEqual(myusers, ['usersA', 'usersB'])
-    
+
     def wait_history(self):
         while True:
             job = history[-1]
@@ -213,7 +213,7 @@ class APIGroupTest(unittest.TestCase):
         self.assertEqual(resp.ok, True)
         resp = requests.post('http://api:5000/group/double_add')
         self.assertEqual(resp.ok, False)
-    
+
     def test_double_perm(self):
         resp = requests.post('http://api:5000/group/double_perm')
         self.assertEqual(resp.text, "")
@@ -279,7 +279,7 @@ class APIUserTest(unittest.TestCase):
         self.assertEqual(resp.ok, True)
         resp = requests.post('http://api:5000/user/double_add')
         self.assertEqual(resp.ok, False)
-    
+
 class APIPasswordTest(unittest.TestCase):
     def setUp(self):
         clean()
