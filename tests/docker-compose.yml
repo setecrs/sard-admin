@@ -33,7 +33,7 @@ services:
       - 389
       - 636
   api:
-    build: ../docker
+    build: ..
     restart: "always"
     links:
       - ldap
@@ -46,9 +46,9 @@ services:
     volumes:
       - ../:/app/
     ports:
-      - 5000:5000
+      - 8080:80
   tests:
-    build: ../docker
+    build: ..
     restart: "no"
     links:
       - api
@@ -60,4 +60,4 @@ services:
       LANG: "en_US.UTF-8"
     volumes:
       - ../:/app/
-    command: ['bash', '-c', 'while ! curl -f http://api:5000/group/; do sleep 0.1; done; python3 -m unittest -f tests/integration.py']
+    command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest -f tests/integration.py']

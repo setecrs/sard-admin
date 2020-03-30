@@ -172,15 +172,15 @@ class APIGroupTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        resp = requests.get('http://api:5000/group/')
+        resp = requests.get('http://api:80/group/')
         data = resp.json()
         self.assertDictEqual(data, {"groups": groups})
 
     def test_add(self):
-        resp = requests.post('http://api:5000/group/add')
+        resp = requests.post('http://api:80/group/add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/group/')
+        resp = requests.get('http://api:80/group/')
         data = resp.json()
         self.assertIn("add", data['groups'])
         self.assertListEqual(Group.listAll(), groups + ['add'])
@@ -188,37 +188,37 @@ class APIGroupTest(unittest.TestCase):
         self.assertListEqual(Group.listAll(), groups)
 
     def test_list_members(self):
-        resp = requests.post('http://api:5000/group/list_members')
+        resp = requests.post('http://api:80/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userAm')
+        resp = requests.post('http://api:80/user/userAm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userAm/group/list_members')
+        resp = requests.post('http://api:80/user/userAm/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userBm')
+        resp = requests.post('http://api:80/user/userBm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userBm/group/list_members')
+        resp = requests.post('http://api:80/user/userBm/group/list_members')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/group/list_members')
+        resp = requests.get('http://api:80/group/list_members')
         data = resp.json()
         self.assertListEqual(data, ['userAm', 'userBm'])
 
     def test_double_add(self):
-        resp = requests.post('http://api:5000/group/double_add')
+        resp = requests.post('http://api:80/group/double_add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/group/double_add')
+        resp = requests.post('http://api:80/group/double_add')
         self.assertEqual(resp.ok, False)
 
     def test_double_perm(self):
-        resp = requests.post('http://api:5000/group/double_perm')
+        resp = requests.post('http://api:80/group/double_perm')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/group/double_perm/permissions')
+        resp = requests.post('http://api:80/group/double_perm/permissions')
         self.assertEqual(resp.ok, False)
 
 class APIUserTest(unittest.TestCase):
@@ -229,15 +229,15 @@ class APIUserTest(unittest.TestCase):
         clean()
 
     def test_list(self):
-        resp = requests.get('http://api:5000/user/')
+        resp = requests.get('http://api:80/user/')
         data = resp.json()
         self.assertDictEqual(data, {"users": users})
 
     def test_add(self):
-        resp = requests.post('http://api:5000/user/addU')
+        resp = requests.post('http://api:80/user/addU')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/user/')
+        resp = requests.get('http://api:80/user/')
         data = resp.json()
         self.assertIn("addU", data['users'])
         self.assertListEqual(User.listAll(), users + ['addU'])
@@ -246,38 +246,38 @@ class APIUserTest(unittest.TestCase):
         self.assertListEqual(Group.listAll(), groups)
 
     def test_add_listgroups(self):
-        resp = requests.post('http://api:5000/group/groupA')
+        resp = requests.post('http://api:80/group/groupA')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/group/groupB')
+        resp = requests.post('http://api:80/group/groupB')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/group/groupC')
+        resp = requests.post('http://api:80/group/groupC')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userList')
+        resp = requests.post('http://api:80/user/userList')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userList/group/groupA')
+        resp = requests.post('http://api:80/user/userList/group/groupA')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userList/group/groupB')
+        resp = requests.post('http://api:80/user/userList/group/groupB')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/userList/group/groupC')
+        resp = requests.post('http://api:80/user/userList/group/groupC')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.get('http://api:5000/user/userList')
+        resp = requests.get('http://api:80/user/userList')
         data = resp.json()
         self.assertListEqual(
             sorted(data['groups']),
             sorted(['groupA', 'groupB', 'groupC', 'userList', 'Domain Users']))
 
     def test_double_add(self):
-        resp = requests.post('http://api:5000/user/double_add')
+        resp = requests.post('http://api:80/user/double_add')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/double_add')
+        resp = requests.post('http://api:80/user/double_add')
         self.assertEqual(resp.ok, False)
 
 class APIPasswordTest(unittest.TestCase):
@@ -288,10 +288,10 @@ class APIPasswordTest(unittest.TestCase):
         clean()
 
     def test_change(self):
-        resp = requests.post('http://api:5000/user/change')
+        resp = requests.post('http://api:80/user/change')
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        resp = requests.post('http://api:5000/user/change/reset_password', json={
+        resp = requests.post('http://api:80/user/change/reset_password', json={
             "password": "1234"
         })
         self.assertDictEqual(resp.json(), {"password": "1234"})

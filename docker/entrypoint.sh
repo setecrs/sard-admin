@@ -82,7 +82,7 @@ fi
 
 # wait for ldap
 COUNT=0
-while (( `curl ${LDAP_SERVER}:389; echo $?` == 52 ))
+while (( `curl ${LDAP_SERVER}:389; echo $?` == 7 )) # 7: connection refused
 do
   sleep 0.1
   if (( COUNT++ > 10 ))

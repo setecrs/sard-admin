@@ -21,6 +21,15 @@ jobs:
       - name: docker-compose up --abort-on-container-exit
         run: docker-compose up --abort-on-container-exit
         working-directory: ./tests
+  version:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: check if the version in setup.py matches the tag
+      run: grep -qF "version='${{env.VERSION}}'" setup.py
+
   build:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '.yml')
