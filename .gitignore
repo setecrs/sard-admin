@@ -1,3 +1,6 @@
 *.pyc
 venv/
 .vscode/
+build/
+dist/
+sardadmin.egg-info/

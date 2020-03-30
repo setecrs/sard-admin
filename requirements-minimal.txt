@@ -1,5 +1,0 @@
-flask
-Werkzeug==0.16.1
-flask_restplus
-docopt
-requests

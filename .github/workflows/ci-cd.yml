@@ -5,7 +5,7 @@ on: ['push']
 
 env:
   REPO: setecrs/sard-admin
-  FOLDER: docker
+  FOLDER: .
   VERSION: ${GITHUB_REF#refs/tags/}
 
 jobs:
