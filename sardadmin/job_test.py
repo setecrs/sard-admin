@@ -12,8 +12,27 @@ class JobTest(unittest.TestCase):
         def func():
             cmd = ['echo', "job_test.py"]
             proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
-            print(proc.stdout)
             yield proc.stdout
+        t1, t2 = addJob(jobs, op, history, func, timeout=1)
+        t1.join()
+        time.sleep(0.1) # wait for t2 to del jobs[op]
+        self.assertEqual(len(jobs),0)
+        self.assertEqual(len(history),1)
+        self.assertEqual(history[0]['output'], "job_test.py\n")
+        self.assertEqual(history[0]['running'], False)
+        dur = history[0]['end'] - history[0]['start']
+        self.assertGreater(dur, 0)
+        t2.join()
+        self.assertEqual(len(history),0)
+
+    def test_echo2(self):
+        jobs = {}
+        op = "A"
+        history = []
+        def func():
+            cmd = ['echo', "job_test.py"]
+            proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+            jobs["A"]["output"] += proc.stdout
         t1, t2 = addJob(jobs, op, history, func, timeout=1)
         t1.join()
         time.sleep(0.1) # wait for t2 to del jobs[op]
