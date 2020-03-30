@@ -1,7 +1,6 @@
 FROM fedora:28
 
-RUN dnf makecache
-RUN dnf install -y samba smbldap-tools sssd-ldap findutils python3
+RUN dnf install -y samba smbldap-tools sssd-ldap findutils python3 && dnf clean all
 
 COPY docker/smb.conf /etc/samba/
 COPY docker/smbldap.conf /etc/smbldap-tools/
