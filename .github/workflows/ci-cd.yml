@@ -9,6 +9,17 @@ env:
   VERSION: ${GITHUB_REF#refs/tags/}
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: python3 -m pip install -r requirements.txt
+        run: python3 -m pip install -r requirements.txt
+
+      - name: python3 -m unittest -v
+        run: python3 -m unittest -v
+
   integration-tests:
     runs-on: ubuntu-latest
     steps:
