@@ -12,5 +12,7 @@ setup(
         "flask_restplus",
         "docopt",
         "requests",
+        "ldap3",
+        "PyJWT"
     ],
 )

@@ -10,6 +10,7 @@ sys.path.append(os.path.abspath('..'))
 
 from sardadmin.group import Group, history
 from sardadmin.user import User
+from sardadmin.auth import Auth
 
 groups = [
     'Domain Admins',
@@ -37,10 +38,24 @@ def clean():
             Group(x).delete()
 
 # extra measure to avoid running this in production
-assert set(groups) == set(Group.listAll())
+assert set(groups) == set([x for x in Group.listAll() if x != 'testAdmin'])
 
 # extra measure to avoid running this in production
-assert set(users) == set(User.listAll())
+assert set(users) == set([x for x in User.listAll() if x != 'testAdmin'])
+
+if not 'testAdmin' in User.listAll():
+    User('testAdmin').create()
+User('testAdmin').resetPassword('testAdminPassword')
+User('testAdmin').enterGroup('Domain Admins')
+users += 'testAdmin'
+groups += 'testAdmin'
+auth = Auth('JWT_SECRET', 'ldap')
+resp = requests.post('http://api:80/auth/login', json=dict(
+    user='testAdmin',
+    password='testAdminPassword'
+))
+assert resp.ok
+token = resp.json()['auth_token']
 
 class UserTest(unittest.TestCase):
     def setUp(self):
@@ -173,19 +188,22 @@ class APIGroupTest(unittest.TestCase):
 
     def test_list(self):
         resp = requests.get('http://api:80/group/')
+        self.assertEqual(resp.ok, True)
         data = resp.json()
         self.assertDictEqual(data, {"groups": groups})
 
     def test_add(self):
         resp = requests.post('http://api:80/group/add')
+        self.assertEqual(resp.ok, False)
+        resp = requests.post('http://api:80/group/add', data='', headers=dict(
+            Authorization=f'Bearer {token}'
+        ))
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
         resp = requests.get('http://api:80/group/')
         data = resp.json()
         self.assertIn("add", data['groups'])
         self.assertListEqual(Group.listAll(), groups + ['add'])
-        Group('add').delete()
-        self.assertListEqual(Group.listAll(), groups)
 
     def test_list_members(self):
         resp = requests.post('http://api:80/group/list_members')

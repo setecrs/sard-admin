@@ -42,11 +42,15 @@ services:
       LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
       LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
       LDAP_SERVER: "ldap"
+      JWT_SECRET: "JWT_SECRET"
       LANG: "en_US.UTF-8"
+      FLASK_APP: "sardadmin"
+      FLASK_ENV: "development"
     volumes:
       - ../:/app/
     ports:
       - 8080:80
+    command: ['flask', 'run', '-h', '0.0.0.0', '-p', '80']
   tests:
     build: ..
     restart: "no"
