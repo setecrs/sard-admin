@@ -4,7 +4,7 @@ from subprocess import run, PIPE, STDOUT
 
 from .job import addJob
 
-class JobTest(unittest.TestCase):
+class TestJob(unittest.TestCase):
     def test_echo(self):
         jobs = {}
         op = "A"
