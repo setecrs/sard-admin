@@ -84,8 +84,7 @@ def create_app():
         def post(self, login):
             """Cria novo usuario"""
             try:
-                User(login).create()
-                return ('', 204)
+                return User(login).create()
             except Exception as e:
                 raise BadRequest(str(e))
 
