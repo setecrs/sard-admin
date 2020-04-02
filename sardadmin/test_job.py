@@ -52,7 +52,6 @@ class TestJob(unittest.TestCase):
         def func():
             cmd = ['echo', "job_test.py"]
             proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
-            print(proc.stdout)
             yield proc.stdout
         tA1, tA2 = addJob(jobs, op, history, func, timeout=1)
         accepted = False
