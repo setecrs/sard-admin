@@ -11,6 +11,29 @@ from .user import User
 from .group import Group, jobs, history
 from .auth import Auth
 
+def check_auth(request: Flask.request_class, auth: Auth):
+    auth_header = request.headers.get('Authorization')
+    auth_token = auth_header.split(' ',1)[1]
+    user = auth.check(auth_token)
+    return user
+
+def check_admin(request: Flask.request_class, auth: Auth):
+    user = check_auth(request, auth)
+    if not user in Group('Domain Admins').users():
+        raise Exception('User must be in group "Domain Admins" to use this resource')
+
+def check_member(group, request: Flask.request_class, auth: Auth):
+    user = check_auth(request, auth)
+    if (not user in Group('Domain Admins').users() and
+        not user in Group(group).users()):
+        raise Exception('User must be a member or be in group "Domain Admins" to use this resource')
+
+def check_user(user, request: Flask.request_class, auth: Auth):
+    auth_user = check_auth(request, auth)
+    if (not auth_user in Group('Domain Admins').users() and
+        not auth_user == user):
+        raise Exception('User must be himself or be in group "Domain Admins" to use this resource')
+
 def create_app(ldap_server=None, jwt_secret=None):
     app = Flask(__name__)                          #  Create a Flask WSGI appliction
     api = Api(app, default_mediatype='text/plain') #  Create a Flask-RESTPlus API
@@ -21,29 +44,6 @@ def create_app(ldap_server=None, jwt_secret=None):
         jwt_secret = os.environ['JWT_SECRET']
     assert len(jwt_secret) > 0
     auth = Auth(jwt_secret, ldap_server)
-
-    def check_auth(request: Flask.request_class):
-        auth_header = request.headers.get('Authorization')
-        auth_token = auth_header.split(' ',1)[1]
-        user = auth.check(auth_token)
-        return user
-    
-    def check_admin(request: Flask.request_class):
-        user = check_auth(request)
-        if not user in Group('Domain Admins').users():
-            raise Exception('User must be in group "Domain Admins" to use this resource')
-
-    def check_member(group, request: Flask.request_class):
-        user = check_auth(request)
-        if (not user in Group('Domain Admins').users() and
-            not user in Group(group).users()):
-            raise Exception('User must be a member or be in group "Domain Admins" to use this resource')
-
-    def check_user(user, request: Flask.request_class):
-        auth_user = check_auth(request)
-        if (not auth_user in Group('Domain Admins').users() and
-            not auth_user == user):
-            raise Exception('User must be himself or be in group "Domain Admins" to use this resource')
 
     @api.route('/jobs/', methods=['GET'])
     class Jobs(Resource):
