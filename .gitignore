@@ -5,3 +5,4 @@ build/
 dist/
 sardadmin.egg-info/
 .coverage
+coverage.xml
