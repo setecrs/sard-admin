@@ -3,10 +3,10 @@ from subprocess import run, PIPE
 
 from .job import addJob
 
-jobs = {}
-history = []
-
 class Group:
+    jobs = {}
+    history = []
+
     @staticmethod
     def listAll():
         "List all groups in the LDAP database"
@@ -60,8 +60,8 @@ class Group:
 
     def delete(self):
         "Deletes the group"
-        if self.name in jobs:
-            jobs[self.name]['thread'].join()
+        if self.name in Group.jobs:
+            Group.jobs[self.name]['thread'].join()
         run(['smbldap-groupdel', self.name], check=True)
 
     def permissions(self):
@@ -87,7 +87,7 @@ class Group:
                     newmode = newmode | 0o111 # everybody can execute
                     if oldmode != newmode:
                         os.chmod(xpath, newmode)
-                        jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
+                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
                 for x in filenames:
                     #Inner files are always readable. Some are executable too.
                     xpath = os.path.join(dirpath, x)
@@ -102,5 +102,5 @@ class Group:
                         newmode = newmode | 0o111 # everybody can execute
                     if oldmode != newmode:
                         os.chmod(xpath, newmode)
-                        jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
-        addJob(jobs, self.name, history, f, self.history_timeout)
+                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
+        addJob(Group.jobs, self.name, Group.history, f, self.history_timeout)

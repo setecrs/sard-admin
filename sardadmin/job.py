@@ -2,9 +2,13 @@ import time
 import types
 from threading import Thread
 
+class AlreadyRunningException(Exception):
+    "Job already running"
+    pass
+
 def addJob(jobs, op, history, func, timeout):
     if op in jobs:
-        raise Exception(f'op already in job list: {op}')
+        raise AlreadyRunningException(f'op already in job list: {op}')
     def th():
         jobs[op] = {
             "name": op,

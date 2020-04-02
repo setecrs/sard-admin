@@ -8,7 +8,7 @@ import requests
 
 sys.path.append(os.path.abspath('..'))
 
-from sardadmin.group import Group, history
+from sardadmin.group import Group
 from sardadmin.user import User
 from sardadmin.auth import Auth
 
@@ -54,6 +54,7 @@ resp = requests.post('http://api:80/auth/login', json=dict(
     user='testAdmin',
     password='testAdminPassword'
 ))
+print(resp.text)
 assert resp.ok
 token = resp.json()['auth_token']
 
