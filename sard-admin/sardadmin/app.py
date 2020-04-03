@@ -140,7 +140,6 @@ def _create_app(auth, User, Group):
         def post(self, login, group):
             """Adiciona usuario ao grupo"""
             try:
-                log
                 check_request.check_member(group, request)
             except:
                 return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
@@ -158,7 +157,7 @@ def _create_app(auth, User, Group):
         def post(self, login):
             """Verifica e corrige pasta home do usuario"""
             try:
-                check_user(login, request)
+                check_request.check_user(login, request)
             except:
                 return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
             try:
@@ -175,7 +174,7 @@ def _create_app(auth, User, Group):
         def post(self, login):
             """Verifica e corrige permissoes do usuario"""
             try:
-                check_user(login, request)
+                check_request.check_user(login, request)
             except:
                 return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
             try:
