@@ -1,6 +1,6 @@
 # sard-admin
 
-![sard-admin_ci-cd](https://github.com/setecrs/sard-admin/workflows/sard-admin_ci-cd/badge.svg)
+![sard-admin ci-cd](https://github.com/setecrs/sard-admin/workflows/sard-admin_ci-cd/badge.svg)
 
 REST API that uses smbldap-tools to manage SAMBA/CIFS users and groups in a LDAP database.
 
