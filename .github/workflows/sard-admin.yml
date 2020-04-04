@@ -2,7 +2,6 @@ name: sard-admin_ci-cd
 
 on: ['push']
 
-
 env:
   REPO: setecrs/sard-admin
   FOLDER: sard-admin
@@ -18,43 +17,68 @@ jobs:
     - name: check if the version in setup.py matches the tag
       run: grep -qF "version='${{env.VERSION}}'" setup.py
 
-  test-build-upload:
+  bare-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - run: python3 -m pip install -r requirements.txt
+        working-directory: ./${{env.FOLDER}}
+
+      - run: python3 -m unittest -v
+        working-directory: ./${{env.FOLDER}}
+
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: python3 -m pip install -r requirements.txt
-        run: python3 -m pip install -r requirements.txt
-        working-directory: {{env.FOLDER}}
-
-      - name: python3 -m unittest -v
-        run: python3 -m unittest -v
-        working-directory: {{env.FOLDER}}
-
       - name: pull latest (for cache)
         run: docker pull ${{env.REPO}}:latest || echo could not pull
-        
+
       - name: Docker build latest
         run: docker build --cache-from ${{env.REPO}}:latest ${{env.FOLDER}} -t ${{env.REPO}}:latest
         
-      - name: docker-compose build - integration tests
-        run: docker-compose build
-        working-directory: {{env.FOLDER}}/tests
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
 
-      - name: run integration tests
-        run: docker-compose up --abort-on-container-exit
-        working-directory: {{env.FOLDER}}/tests
+      - run: docker-compose up --abort-on-container-exit unit-tests
+        working-directory: ./${{env.FOLDER}}/tests
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: docker-compose up --abort-on-container-exit integration-tests
+        working-directory: ./${{env.FOLDER}}/tests
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - version
+      - bare-unit-tests
+      - build
+      - unit-tests
+      - integration-tests
+    steps:
+      - uses: actions/checkout@v2
 
       - name: Docker login
-        if: startsWith(github.ref, 'refs/tags/')
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
         
       - name: Docker push latest
-        if: startsWith(github.ref, 'refs/tags/')
         run: docker push ${{env.REPO}}:latest
         
       - name: Docker push - semver
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           docker tag ${{env.REPO}}:latest ${{env.REPO}}:${{env.VERSION}}
           docker push ${{env.REPO}}:${{env.VERSION}}

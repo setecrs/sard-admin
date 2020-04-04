@@ -1,5 +1,18 @@
 version: '2.1'
 services:
+  unit-tests:
+    image: setecrs/sard-admin
+    restart: "no"
+    environment:
+      SID: "S-1-5-21-682337471-1126014868-3524221000"
+      LDAP_BASE_DN: "dc=setecrs,dc=dpf,dc=gov,dc=br"
+      LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
+      LDAP_SERVER: "ldap"
+      LANG: "en_US.UTF-8"
+    volumes:
+      - ../:/app/
+    entrypoint: ['python3']
+    command: ['-m', 'unittest']
   ldap:
     image: osixia/openldap:1.1.9
     restart: "no"
@@ -33,8 +46,10 @@ services:
       - 389
       - 636
   api:
-    build: ..
+    image: setecrs/sard-admin
     restart: "always"
+    depends_on:
+      - ldap
     links:
       - ldap
     environment:
@@ -51,9 +66,11 @@ services:
     ports:
       - 8080:80
     command: ['flask', 'run', '-h', '0.0.0.0', '-p', '80']
-  tests:
-    build: ..
+  integration-tests:
+    image: setecrs/sard-admin
     restart: "no"
+    depends_on:
+      - api
     links:
       - api
     environment:
@@ -62,6 +79,7 @@ services:
       LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
       LDAP_SERVER: "ldap"
       LANG: "en_US.UTF-8"
+      TESTS: "INTEGRATION"
     volumes:
       - ../:/app/
-    command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest -f tests/integration.py']
+    command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest']
