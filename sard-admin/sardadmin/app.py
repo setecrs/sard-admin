@@ -228,7 +228,7 @@ def _create_app(auth, User, Group):
                 raise BadRequest(dict(error=str(e)))
 
     @api.route('/auth/logout/')
-    class AuthLogin(Resource):
+    class AuthLogout(Resource):
         def get(self):
             try:
                 user = check_request.check_auth(request)
