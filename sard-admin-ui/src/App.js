@@ -1,40 +1,47 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment, useEffect, useReducer } from 'react';
+import PropTypes from 'prop-types'
 
-import UsersList from './UsersList'
-import NavList from './NavList';
+import NavList from './elements/NavList';
+import UsersViewAll from './user/UsersViewAll';
+import GroupView from './group/GroupView'
+import { initialState, reducer, Actions } from './data/state'
 
-function App() {
-  const [navActive, setNavActive] = useState(0)
-  const [users, setUsers] = useState([])
-  const [selectedUser, setSelectedUser] = useState('')
-
-  const usersView = <div className="container">
-    <div className="row border-bottom border-gray my-3 p-3">
-      <div className="col text-right">
-        <button className="btn btn-success">
-          Create new user
-        </button>
-      </div>
-    </div>
-    <div className="row my-3 p-3">
-      <div className="col-md-3">
-        {UsersList({ users, selectedUser, setSelectedUser })}
-      </div>
-    </div>
-  </div>
-
-
-  const fetchUsers = () => {
-    setUsers(['template1', 'template2', 'template3'])
-  }
+function App({ fetcher }) {
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const actions = Actions({ fetcher, dispatch })
 
   useEffect(() => {
-    fetchUsers()
+    const f = async () =>{
+      const x = actions.listUsers()
+      const y = actions.listGroups()
+      try{
+        await x
+      } catch (e){
+        console.error('error on useEffect', e)
+        dispatch({type: 'error', payload: e})
+      }
+      try{
+        await y
+      } catch (e){
+        console.error('error on useEffect', e)
+        dispatch({type: 'error', payload: e})
+      }
+    }
+    f()
   }, [])
 
-  const groupView = <div>
-    Group
-  </div>
+  const [navActive, setNavActive] = useState(0)
+
+  const usersView = UsersViewAll({
+    users: state.users,
+    selectedUser: state.selectedUser,
+    setSelectedUser: actions.selectUser,
+    createUser: actions.createUser,
+  })
+
+  const groupView = GroupView({
+    groups: state.groups,
+  })
 
   const tabs = [
     { title: "Users", element: usersView },
@@ -62,10 +69,25 @@ function App() {
               ) : ""
             ))}
           </div>
+          <Fragment>
+            {(state.error)?JSON.stringify(state.error):''}
+          </Fragment>
         </div>
       </div>
     </div >
   );
 }
 
+App.propTypes = {
+  fetcher: PropTypes.shape({
+    listUsers: PropTypes.func.isRequired,
+    createUser: PropTypes.func.isRequired,
+    createGroup: PropTypes.func.isRequired,
+    addMember: PropTypes.func.isRequired,
+    listMembers: PropTypes.func.isRequired,
+    fixHome: PropTypes.func.isRequired,
+    userPermissions: PropTypes.func.isRequired,
+    setPassword: PropTypes.func.isRequired,
+  }).isRequired,
+}
 export default App;
