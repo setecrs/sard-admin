@@ -1,11 +1,11 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import GroupView from './GroupView';
+import { GroupPage } from './GroupPage';
 
 test('GroupView renders', () => {
-  const { baseElement, getByText } = render(<GroupView />);
+  const { baseElement, getByText } = render(GroupPage({groups:['group1']}));
   expect(baseElement).not.toBeNull()
-  expect(getByText(/Group/i)).not.toBeNull()
+  expect(getByText(/group1/)).not.toBeNull()
 });
 
 test.todo('list all groups: /group/')

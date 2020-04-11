@@ -1,15 +1,20 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import UsersViewAll from './UsersViewAll';
+import { UsersPage } from './UsersPage';
 
 describe('create new user', () => {
     test('has button', () => {
-        const usersViewAll = UsersViewAll({
+        const usersPage = UsersPage({
             users: ['user1', 'user2'],
             selectedUser: '',
-            setSelectedUser: () => { }
+            setSelectedUser: () => { },
+            createUser: () => {}, 
+            fixHome: () => {},
+            addMember: () => {},
+            groups:[],
+            subscriptions:{},
         })
-        const { getByText } = render(usersViewAll);
+        const { getByText } = render(usersPage);
         const btn = getByText(/Create new user/i)
         expect(btn).not.toBeNull()
     })

@@ -1,35 +1,94 @@
-export function Fetcher({baseUrl}) {
+import assert from 'assert'
+
+export function Fetcher({ baseUrl }) {
+    const helperNoJson = async (baseUrl, suffixUrl, ...args) => {
+        const URL = baseUrl + suffixUrl
+        const req = new Request(URL)
+        const resp = await fetch(req, ...args)
+        assert(resp.ok)
+        return resp
+    }
+    const helper = async (baseUrl, suffixUrl, ...args) => {
+        const resp = await helperNoJson(baseUrl, suffixUrl, ...args)
+        const j = await resp.json()
+        return j
+    }
     return {
-        listUsers: async () => {
-            const URL = baseUrl + '/user/'
-            const req = new Request(URL)
-            const resp = await fetch(req)
-            const j = await resp.json()
-            return j.users
+        listJobs: async () => {
+            const j = await helper(baseUrl, '/jobs/')
+            return j.jobs
+        },
+        listJobsHistory: async () => {
+            const j = await helper(baseUrl, '/jobs/')
+            return j.history
         },
         listGroups: async () => {
-            const URL = baseUrl + '/group/'
-            const req = new Request(URL)
-            const resp = await fetch(req)
-            const j = await resp.json()
+            const j = await helper(baseUrl, '/group/')
             return j.groups
         },
-        createUser: (user) => {
+        listMembers: async (group) => {
+            const j = await helper(baseUrl, `/group/${group}`)
+            return j
         },
-        createGroup: (group) => {
+        createGroup: async (group) => {
+            const URL = baseUrl + `/group/${group}`
+            const req = new Request(URL)
+            await fetch(req, {
+                method: 'POST'
+            })
         },
-        addMember: ({group, user}) => {
+        groupPermissions: async (group) => {
+            await helperNoJson(baseUrl, `/group/${group}/permissions`, {
+                method: 'POST',
+            })
         },
-        listMembers: (group) => {
+        listUsers: async () => {
+            const j = await helper(baseUrl, '/user/')
+            return j.users
         },
-        fixHome: (user) => {
-
+        listSubscriptions: async (user) => {
+            const j = await helper(baseUrl, `/user/${user}`)
+            return j.groups
         },
-        userPermissions: (user) => {
-
+        createUser: async (user) => {
+            const j = await helper(baseUrl, `/user/${user}`, {
+                method: 'POST',
+            })
+            return j
         },
-        setPassword: ({user, password}) => {
-
+        addMember: async ({ group, user }) => {
+            await helperNoJson(baseUrl, `/user/${user}/group/${group}`, {
+                method: 'POST',
+            })
+        },
+        fixHome: async (user) => {
+            await helperNoJson(baseUrl, `/user/${user}/home`, {
+                method: 'POST',
+            })
+        },
+        userPermissions: async (user) => {
+            await helperNoJson(baseUrl, `/user/${user}/permissions`, {
+                method: 'POST',
+            })
+        },
+        setPassword: async ({ user, password }) => {
+            await helperNoJson(baseUrl, `/user/${user}/reset_password`, {
+                method: 'POST',
+                json: {
+                    password,
+                },
+            })
+        },
+        login: async ({ user, password }) => {
+            return await helper(baseUrl, `/auth/login`, {
+                method: 'POST',
+                json: { user, password },
+            })
+        },
+        logout: async () => {
+            await helperNoJson(baseUrl, `/auth/logout`, {
+                method: 'POST',
+            })
         },
     }
 }
@@ -51,15 +110,18 @@ export function MockFetcher() {
         createGroup: (group) => {
             groups.push(group)
         },
-        addMember: ({group, user}) => {
-            members[group] = [...members[group]||[], user]
+        addMember: ({ group, user }) => {
+            members[group] = [...(members[group] || []), user]
         },
         listMembers: (group) => {
-            return [...members[group]||[]]
+            return [...(members[group] || [])]
         },
-        fixHome: (user) => {},
-        userPermissions: (user) => {},
-        setPassword: ({user, password}) => {},
+        listJobs: () => ([]),
+        listJobsHistory: () => ([]),
+        fixHome: (user) => { },
+        userPermissions: (user) => { },
+        groupPermissions: (user) => { },
+        setPassword: ({ user, password }) => { },
     }
 }
 

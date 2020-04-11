@@ -1,16 +1,13 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, wait } from '@testing-library/react';
 import App from './App';
 import { MockFetcher } from './data/fetcher';
-import { act } from 'react-dom/test-utils';
 
-test('#navbar has Users and Groups', () => {
-  let x
-  act(() => {
-    x = render(<App fetcher={MockFetcher()} />);
-  })
-  const { baseElement } = x
-  expect(baseElement.querySelectorAll('#navbar')).toHaveLength(1)
+test('#navbar has Users and Groups', async () => {
+  const { baseElement } = render(<App fetcher={MockFetcher()} />)
+  await wait(() =>
+    expect(baseElement.querySelectorAll('#navbar')).toHaveLength(1)
+  )
   const ul = baseElement.querySelector("#navbar")
   expect(ul.childNodes).toHaveLength(2)
   expect(ul.childNodes[0].textContent).toBe("Users")

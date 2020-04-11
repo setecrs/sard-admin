@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types'
 
-function UsersList({ users, selectedUser, setSelectedUser }) {
+export function UsersList({ users, selectedUser, setSelectedUser }) {
     return <ul id='user_list' className="list-group">
         {users.map((u, i) => (
             <li key={i} 
@@ -15,5 +15,3 @@ function UsersList({ users, selectedUser, setSelectedUser }) {
 UsersList.propTypes = {
     users: PropTypes.arrayOf(PropTypes.string)
 }
-
-export default UsersList

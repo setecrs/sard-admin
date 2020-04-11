@@ -2,8 +2,8 @@ import React, { useState, Fragment, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types'
 
 import NavList from './elements/NavList';
-import UsersViewAll from './user/UsersViewAll';
-import GroupView from './group/GroupView'
+import { UsersPage } from './user/UsersPage';
+import { GroupPage } from './group/GroupPage'
 import { initialState, reducer, Actions } from './data/state'
 
 function App({ fetcher }) {
@@ -11,20 +11,20 @@ function App({ fetcher }) {
   const actions = Actions({ fetcher, dispatch })
 
   useEffect(() => {
-    const f = async () =>{
+    const f = async () => {
       const x = actions.listUsers()
       const y = actions.listGroups()
-      try{
+      try {
         await x
-      } catch (e){
+      } catch (e) {
         console.error('error on useEffect', e)
-        dispatch({type: 'error', payload: e})
+        dispatch({ type: 'error', payload: e })
       }
-      try{
+      try {
         await y
-      } catch (e){
+      } catch (e) {
         console.error('error on useEffect', e)
-        dispatch({type: 'error', payload: e})
+        dispatch({ type: 'error', payload: e })
       }
     }
     f()
@@ -32,19 +32,26 @@ function App({ fetcher }) {
 
   const [navActive, setNavActive] = useState(0)
 
-  const usersView = UsersViewAll({
+  const usersPage = UsersPage({
     users: state.users,
     selectedUser: state.selectedUser,
     setSelectedUser: actions.selectUser,
     createUser: actions.createUser,
+    fixHome: actions.fixHome,
+    addMember: actions.addMember,
+    groups: state.groups,
+    subscriptions: state.subscriptions,
   })
 
-  const groupView = GroupView({
+  const groupView = GroupPage({
     groups: state.groups,
+    selectedGroup: state.selectedGroup,
+    setSelectedGroup: actions.selectGroup,
+    createGroup: actions.createGroup,
   })
 
   const tabs = [
-    { title: "Users", element: usersView },
+    { title: "Users", element: usersPage },
     { title: "Groups", element: groupView },
   ]
 
@@ -70,7 +77,7 @@ function App({ fetcher }) {
             ))}
           </div>
           <Fragment>
-            {(state.error)?JSON.stringify(state.error):''}
+            {(state.error) ? JSON.stringify(state.error) : ''}
           </Fragment>
         </div>
       </div>

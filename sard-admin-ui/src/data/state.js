@@ -8,6 +8,7 @@ export const initialState = {
     users: [],
     groups: [],
     members: {},
+    subscriptions: {},
     error: '',
 }
 
@@ -26,12 +27,20 @@ export function reducer(state, action) {
         case 'logout':
             return { ...state, logout: { user: null, token: null } }
         case 'set members':
+            const subscriptions = {}
+            for (const user in state.subscriptions) {
+                subscriptions[user] = state.subscriptions[user].filter(g => g !== action.payload.group)
+            }
+            for (const user of action.payload.users){
+                subscriptions[user] = [...(subscriptions[user]||[]), action.payload.group]
+            }
             return {
                 ...state,
                 members: {
                     ...state.members,
                     [action.payload.group]: action.payload.users
-                }
+                },
+                subscriptions,
             }
         case 'error':
             return { ...state, error: action.payload }
@@ -44,6 +53,9 @@ export function Actions({ fetcher, dispatch }) {
     return {
         selectUser: (user) => {
             dispatch({ type: 'select user', payload: user })
+        },
+        selectGroup: (group) => {
+            dispatch({ type: 'select group', payload: group })
         },
         listUsers: async () => {
             const users = await fetcher.listUsers()

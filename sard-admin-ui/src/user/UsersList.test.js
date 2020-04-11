@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import UsersList from './UsersList';
+import { UsersList } from './UsersList';
 
 
 test('UserView renders', () => {

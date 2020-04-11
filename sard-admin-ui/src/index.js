@@ -6,13 +6,14 @@ import Fetcher, { MockFetcher } from './data/fetcher';
 import assert from 'assert'
 // import * as serviceWorker from './serviceWorker';
 
-let fetcher = {}
-if (process.env.hasOwnProperty('REACT_APP_SARD_ADMIN_URL')){
-  fetcher = Fetcher({baseUrl: process.env.REACT_APP_SARD_ADMIN_URL})
-} else {
-  assert (['test', 'development'].includes(process.env.NODE_ENV))
-  fetcher = MockFetcher()
+const baseUrl = process.env.REACT_APP_BASE_URL || ''
+let fetcher = Fetcher({baseUrl: baseUrl?baseUrl:''})
+if (['test', 'development'].includes(process.env.NODE_ENV)) {
+  if (! process.env.hasOwnProperty('REACT_APP_DONT_USE_MOCK')){
+    fetcher = MockFetcher()
+  }
 }
+
 ReactDOM.render(
   <React.StrictMode>
     <App fetcher={fetcher}/>
