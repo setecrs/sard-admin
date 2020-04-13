@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import NavList from './elements/NavList';
 import { UsersPage } from './user/UsersPage';
 import { GroupPage } from './group/GroupPage'
+import { LoginPage } from './login/LoginPage'
 import { initialState, reducer, Actions } from './data/state'
 
 function App({ fetcher }) {
@@ -17,13 +18,11 @@ function App({ fetcher }) {
       try {
         await x
       } catch (e) {
-        console.error('error on useEffect', e)
         dispatch({ type: 'error', payload: e })
       }
       try {
         await y
       } catch (e) {
-        console.error('error on useEffect', e)
         dispatch({ type: 'error', payload: e })
       }
     }
@@ -32,27 +31,40 @@ function App({ fetcher }) {
 
   const [navActive, setNavActive] = useState(0)
 
+  const addAuth = (auth_token, fn) => (props) => {
+      props = {
+        ...(props||{}),
+        auth_token,
+      }
+      return fn(props)
+    }
+
   const usersPage = UsersPage({
     users: state.users,
     selectedUser: state.selectedUser,
-    setSelectedUser: actions.selectUser,
-    createUser: actions.createUser,
-    fixHome: actions.fixHome,
-    addMember: actions.addMember,
     groups: state.groups,
     subscriptions: state.subscriptions,
+    setSelectedUser: addAuth(state.auth_token, actions.selectUser),
+    createUser: addAuth(state.auth_token, actions.createUser),
+    fixHome: addAuth(state.auth_token, actions.fixHome),
+    addMember: addAuth(state.auth_token, actions.addMember),
   })
 
-  const groupView = GroupPage({
+  const groupPage = GroupPage({
     groups: state.groups,
     selectedGroup: state.selectedGroup,
-    setSelectedGroup: actions.selectGroup,
-    createGroup: actions.createGroup,
+    setSelectedGroup: addAuth(state.auth_token, actions.selectGroup),
+    createGroup: addAuth(state.auth_token, actions.createGroup),
+  })
+
+  const loginPage = LoginPage({
+    login: actions.login,
   })
 
   const tabs = [
     { title: "Users", element: usersPage },
-    { title: "Groups", element: groupView },
+    { title: "Groups", element: groupPage },
+    { title: "Login", element: loginPage },
   ]
 
   const navBar = NavList({
@@ -69,6 +81,19 @@ function App({ fetcher }) {
           <div className="col-12">
             {navBar}
           </div>
+        </div>
+        <div className="row">
+          <div className="col-12">
+            <ul>
+              {state.errors.map((x, i) =>
+                <li>
+                  {x.toString()}
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+        <div className="row">
           <div className="col">
             {tabs.map((tab, i) => (
               (navActive === i) ? (

@@ -9,7 +9,7 @@ export const initialState = {
     groups: [],
     members: {},
     subscriptions: {},
-    error: '',
+    errors: [],
 }
 
 export function reducer(state, action) {
@@ -31,8 +31,8 @@ export function reducer(state, action) {
             for (const user in state.subscriptions) {
                 subscriptions[user] = state.subscriptions[user].filter(g => g !== action.payload.group)
             }
-            for (const user of action.payload.users){
-                subscriptions[user] = [...(subscriptions[user]||[]), action.payload.group]
+            for (const user of action.payload.users) {
+                subscriptions[user] = [...(subscriptions[user] || []), action.payload.group]
             }
             return {
                 ...state,
@@ -43,7 +43,7 @@ export function reducer(state, action) {
                 subscriptions,
             }
         case 'error':
-            return { ...state, error: action.payload }
+            return { ...state, errors: [...state.errors, action.payload] }
         default:
             throw new Error(`unexpected action: ${action.type}`)
     }
@@ -57,43 +57,97 @@ export function Actions({ fetcher, dispatch }) {
         selectGroup: (group) => {
             dispatch({ type: 'select group', payload: group })
         },
-        listUsers: async () => {
-            const users = await fetcher.listUsers()
-            dispatch({ type: 'set users', payload: users })
+        listUsers: async ({ auth_token }) => {
+            try {
+                const users = await fetcher.listUsers({ auth_token })
+                dispatch({ type: 'set users', payload: users })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        listGroups: async () => {
-            const groups = await fetcher.listGroups()
-            dispatch({ type: 'set groups', payload: groups })
+        listGroups: async ({ auth_token }) => {
+            try {
+                const groups = await fetcher.listGroups({ auth_token })
+                dispatch({ type: 'set groups', payload: groups })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        createUser: async (user) => {
-            await fetcher.createUser(user)
-            const users = await fetcher.listUsers()
-            dispatch({ type: 'set users', payload: users })
-            dispatch({ type: 'select user', payload: user })
+        createUser: async ({ user, auth_token }) => {
+            try {
+                await fetcher.createUser({ user, auth_token })
+                const users = await fetcher.listUsers({ auth_token })
+                dispatch({ type: 'set users', payload: users })
+                dispatch({ type: 'select user', payload: user })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        createGroup: async (group) => {
-            await fetcher.createGroup(group)
-            const groups = await fetcher.listGroups()
-            dispatch({ type: 'set groups', payload: groups })
-            dispatch({ type: 'select group', payload: group })
+        createGroup: async ({ group, auth_token }) => {
+            try {
+                await fetcher.createGroup({ group, auth_token })
+                const groups = await fetcher.listGroups({ auth_token })
+                dispatch({ type: 'set groups', payload: groups })
+                dispatch({ type: 'select group', payload: group })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        addMember: async ({ group, user }) => {
-            await fetcher.addMember({ group, user })
-            const users = await fetcher.listMembers(group)
-            dispatch({ type: 'set members', payload: { group, users } })
+        addMember: async ({ group, user, auth_token }) => {
+            try {
+                await fetcher.addMember({ group, user, auth_token })
+                const users = await fetcher.listMembers({ group, auth_token })
+                dispatch({ type: 'set members', payload: { group, users } })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        listMembers: async (group) => {
-            const users = await fetcher.listMembers(group)
-            dispatch({ type: 'set members', payload: { group, users } })
+        listMembers: async ({ group, auth_token }) => {
+            try {
+                const users = await fetcher.listMembers({ group, auth_token })
+                dispatch({ type: 'set members', payload: { group, users } })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        fixHome: async (user) => {
-            await fetcher.fixHome(user)
+        fixHome: async ({ user, auth_token }) => {
+            try {
+                await fetcher.fixHome({ user, auth_token })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        userPermissions: async (user) => {
-            await fetcher.userPermissions(user)
+        userPermissions: async ({ user, auth_token }) => {
+            try {
+                await fetcher.userPermissions({ user, auth_token })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
-        setPassword: async ({ user, password }) => {
-            await fetcher.setPassword({ user, password })
+        setPassword: async ({ user, password, auth_token }) => {
+            try {
+                await fetcher.setPassword({ user, password, auth_token })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
+        },
+        login: async ({ user, password }) => {
+            try {
+                const resp = await fetcher.login({ user, password })
+                fetcher.auth_token = resp.auth_token
+                dispatch({ type: 'login', payload: resp })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
+        },
+        logout: async ({ auth_token }) => {
+            try {
+                await fetcher.logout({ auth_token })
+                fetcher.auth_token = ''
+                dispatch({ type: 'logout' })
+            } catch (e) {
+                dispatch({ type: 'error', payload: e })
+            }
         },
     }
 }

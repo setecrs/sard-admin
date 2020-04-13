@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import Fetcher, { MockFetcher } from './data/fetcher';
-import assert from 'assert'
 // import * as serviceWorker from './serviceWorker';
 
 const baseUrl = process.env.REACT_APP_BASE_URL || ''
