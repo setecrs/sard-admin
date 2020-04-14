@@ -3,8 +3,19 @@ import { UsersList } from './UsersList'
 import { CreateName } from '../elements/CreateName'
 import { UserDetails } from './UserDetails'
 import { GenericPage } from '../elements/GenericPage'
+import PropTypes from 'prop-types'
 
-export function UsersPage({ users, selectedUser, setSelectedUser, createUser, fixHome, addMember, groups, subscriptions}) {
+export function UsersPage({
+    users,
+    groups,
+    selectedUser,
+    setSelectedUser,
+    createUser,
+    fixHome,
+    addMember,
+    subscriptions,
+    listSubscriptions,
+}) {
     const elemCreate = <CreateName
         id='createUser'
         name='user'
@@ -17,10 +28,11 @@ export function UsersPage({ users, selectedUser, setSelectedUser, createUser, fi
     />
     const elemDetail = <UserDetails
         user={selectedUser}
+        allGroups={groups}
+        mygroups={subscriptions}
         fixHome={fixHome}
         addMember={addMember}
-        mygroups={subscriptions[selectedUser]||[]}
-        allGroups={groups}
+        listSubscriptions={listSubscriptions}
     />
 
     return <GenericPage
@@ -30,3 +42,14 @@ export function UsersPage({ users, selectedUser, setSelectedUser, createUser, fi
     />
 }
 
+UsersPage.propTypes = {
+    users: PropTypes.arrayOf(PropTypes.string).isRequired,
+    groups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    selectedUser: PropTypes.string.isRequired,
+    setSelectedUser: PropTypes.func.isRequired,
+    createUser: PropTypes.func.isRequired,
+    fixHome: PropTypes.func.isRequired,
+    addMember: PropTypes.func.isRequired,
+    subscriptions: PropTypes.arrayOf(PropTypes.string).isRequired,
+    listSubscriptions: PropTypes.func.isRequired,
+}

@@ -17,7 +17,7 @@ export function CreateName({
         <button
             className="btn btn-success"
             onClick={() => {
-                createFunc(newName)
+                createFunc({[name]:newName})
                 setInuse(false)
                 setNewName('')
             }}>

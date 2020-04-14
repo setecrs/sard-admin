@@ -1,11 +1,34 @@
 import PropTypes from 'prop-types'
 import React, { useState, Fragment } from 'react'
 
-export function LoginPage({login}) {
+export function LoginPage({ login, logout, isLogged }) {
+    return <Fragment>
+        {(isLogged) ?
+            <Logout logout={logout} />
+            :
+            <Login login={login} />
+        }
+    </Fragment>
+}
+
+export function Logout({ logout }) {
+    return <div>
+        <button
+            className="btn btn-danger"
+            onClick={() => {
+                logout()
+            }}
+        >
+            Logout
+            </button>
+    </div>
+}
+
+export function Login({ login }) {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
 
-return <Fragment>
+    return <Fragment>
         <div>
             <input
                 placeholder='user'
@@ -19,7 +42,7 @@ return <Fragment>
             <input
                 placeholder='password'
                 value={password}
-                password
+                type="password"
                 onChange={e => {
                     setPassword(e.target.value)
                 }}
@@ -29,7 +52,7 @@ return <Fragment>
             <button
                 className="btn btn-success"
                 onClick={() => {
-                    login({user, password})
+                    login({ user, password })
                     setUser('')
                     setPassword('')
                 }}

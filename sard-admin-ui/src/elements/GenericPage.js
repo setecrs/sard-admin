@@ -12,8 +12,6 @@ export function GenericPage({
             <div className="col-md-3">
                 {elemList}
             </div>
-        </div>
-        <div className="row my-3 p-3">
             <div className="col-md-9">
                 {elemDetail}
             </div>

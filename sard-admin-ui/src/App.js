@@ -5,7 +5,8 @@ import NavList from './elements/NavList';
 import { UsersPage } from './user/UsersPage';
 import { GroupPage } from './group/GroupPage'
 import { LoginPage } from './login/LoginPage'
-import { initialState, reducer, Actions } from './data/state'
+import { initialState, reducer } from './data/state'
+import { Actions } from './data/actions'
 
 function App({ fetcher }) {
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -13,8 +14,8 @@ function App({ fetcher }) {
 
   useEffect(() => {
     const f = async () => {
-      const x = actions.listUsers()
-      const y = actions.listGroups()
+      const x = actions.listUsers({ auth_token: state.auth_token })
+      const y = actions.listGroups({ auth_token: state.auth_token })
       try {
         await x
       } catch (e) {
@@ -32,39 +33,42 @@ function App({ fetcher }) {
   const [navActive, setNavActive] = useState(0)
 
   const addAuth = (auth_token, fn) => (props) => {
-      props = {
-        ...(props||{}),
-        auth_token,
-      }
-      return fn(props)
+    props = {
+      ...(props || {}),
+      auth_token,
     }
+    return fn(props)
+  }
 
-  const usersPage = UsersPage({
-    users: state.users,
-    selectedUser: state.selectedUser,
-    groups: state.groups,
-    subscriptions: state.subscriptions,
-    setSelectedUser: addAuth(state.auth_token, actions.selectUser),
-    createUser: addAuth(state.auth_token, actions.createUser),
-    fixHome: addAuth(state.auth_token, actions.fixHome),
-    addMember: addAuth(state.auth_token, actions.addMember),
-  })
+  const usersPage = <UsersPage
+    users={state.users}
+    groups={state.users}
+    selectedUser={state.selectedUser}
+    subscriptions={state.subscriptions[state.selectedUser] || []}
+    setSelectedUser={actions.selectUser}
+    createUser={addAuth(state.auth_token, actions.createUser)}
+    fixHome={addAuth(state.auth_token, actions.fixHome)}
+    addMember={addAuth(state.auth_token, actions.addMember)}
+    listSubscriptions={addAuth(state.auth_token, actions.listSubscriptions)}
+  />
 
-  const groupPage = GroupPage({
-    groups: state.groups,
-    selectedGroup: state.selectedGroup,
-    setSelectedGroup: addAuth(state.auth_token, actions.selectGroup),
-    createGroup: addAuth(state.auth_token, actions.createGroup),
-  })
+  const groupPage = <GroupPage
+    groups={state.groups}
+    selectedGroup={state.selectedGroup}
+    setSelectedGroup={actions.selectGroup}
+    createGroup={addAuth(state.auth_token, actions.createGroup)}
+  />
 
-  const loginPage = LoginPage({
-    login: actions.login,
-  })
+  const loginPage = <LoginPage
+    login={actions.login}
+    logout={addAuth(actions.logout)}
+    isLogged={!!state.auth_token}
+  />
 
   const tabs = [
     { title: "Users", element: usersPage },
-    { title: "Groups", element: groupPage },
-    { title: "Login", element: loginPage },
+    // { title: "Groups", element: groupPage },
+    { title: <Fragment>{state.auth_token ? state.login : 'Login'}</Fragment>, element: loginPage },
   ]
 
   const navBar = NavList({
@@ -86,7 +90,7 @@ function App({ fetcher }) {
           <div className="col-12">
             <ul>
               {state.errors.map((x, i) =>
-                <li>
+                <li key={i}>
                   {x.toString()}
                 </li>
               )}
