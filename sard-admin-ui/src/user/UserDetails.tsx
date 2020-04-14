@@ -8,8 +8,17 @@ export function UserDetails({
     mygroups,
     allGroups,
     fixHome,
+    fixPermissions,
     addMember,
     listSubscriptions,
+}: {
+    user: string,
+    mygroups: string[],
+    allGroups: string[],
+    fixHome: ({ user }: { user: string }) => Promise<void>,
+    fixPermissions: ({ user }: { user: string }) => Promise<void>,
+    addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
+    listSubscriptions: ({ user }: { user: string }) => Promise<void>,
 }) {
     const [selectedGroup, setSelectedGroup] = useState('')
     const [refreshing, setRefreshing] = useState(false)
@@ -22,13 +31,13 @@ export function UserDetails({
         })()
     }, [user])
 
-    if (!user){
-        return ''
+    if (!user) {
+        return <Fragment></Fragment>
     }
 
     return <Fragment>
         <h2>{user}</h2>
-        {(refreshing ? 'refreshing' : '')}
+        {(refreshing) ? 'refreshing' : ''}
         <ul>
             {mygroups.map((g, i) =>
                 <li key={i}>{g}</li>
@@ -42,12 +51,23 @@ export function UserDetails({
                 setSelectedValue={setSelectedGroup}
             />
             <button
-                onClick={() => addMember({ group: selectedGroup, user })}
+                onClick={async () => {
+                    setRefreshing(true)
+                    await addMember({ group: selectedGroup, user })
+                    setRefreshing(false)
+                }}
             >Add group</button>
         </div>
         <div>
             <button
-                onClick={() => fixHome(user)}
+                onClick={() => fixHome({ user })}
+            >
+                Fill home directory
+            </button>
+        </div>
+        <div>
+            <button
+                onClick={() => fixPermissions({ user })}
             >
                 Fix home directory permissions
             </button>

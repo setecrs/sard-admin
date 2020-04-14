@@ -7,14 +7,26 @@ import PropTypes from 'prop-types'
 
 export function UsersPage({
     users,
-    groups,
+    allGroups,
+    myGroups,
     selectedUser,
     setSelectedUser,
     createUser,
     fixHome,
+    fixPermissions,
     addMember,
-    subscriptions,
     listSubscriptions,
+}: {
+    users: string[],
+    allGroups: string[],
+    myGroups: string[],
+    selectedUser: string,
+    setSelectedUser: (x: string) => void,
+    createUser: ({ user }: { user: string }) => Promise<void>,
+    fixHome: ({ user }: { user: string }) => Promise<void>,
+    fixPermissions: ({ user }: { user: string }) => Promise<void>,
+    addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
+    listSubscriptions: ({ user }: { user: string }) => Promise<void>,
 }) {
     const elemCreate = <CreateName
         id='createUser'
@@ -28,9 +40,10 @@ export function UsersPage({
     />
     const elemDetail = <UserDetails
         user={selectedUser}
-        allGroups={groups}
-        mygroups={subscriptions}
+        allGroups={allGroups}
+        mygroups={myGroups}
         fixHome={fixHome}
+        fixPermissions={fixPermissions}
         addMember={addMember}
         listSubscriptions={listSubscriptions}
     />
@@ -44,12 +57,12 @@ export function UsersPage({
 
 UsersPage.propTypes = {
     users: PropTypes.arrayOf(PropTypes.string).isRequired,
-    groups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    allGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
+    myGroups: PropTypes.arrayOf(PropTypes.string).isRequired,
     selectedUser: PropTypes.string.isRequired,
     setSelectedUser: PropTypes.func.isRequired,
     createUser: PropTypes.func.isRequired,
     fixHome: PropTypes.func.isRequired,
     addMember: PropTypes.func.isRequired,
-    subscriptions: PropTypes.arrayOf(PropTypes.string).isRequired,
     listSubscriptions: PropTypes.func.isRequired,
 }

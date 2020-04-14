@@ -132,7 +132,7 @@ class APIGroupTest(unittest.TestCase):
         self.assertEqual(resp.ok, True)
         resp = requests.get(prefix_url + '/group/list_members')
         data = resp.json()
-        self.assertListEqual(data, ['userAm', 'userBm'])
+        self.assertDictEqual(data, dict(group='list_members', users=['userAm', 'userBm']))
 
     def test_double_add(self):
         resp = requests.post(prefix_url + '/group/double_add', headers=dict(

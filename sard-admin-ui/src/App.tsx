@@ -7,8 +7,10 @@ import { GroupPage } from './group/GroupPage'
 import { LoginPage } from './login/LoginPage'
 import { initialState, reducer } from './data/state'
 import { Actions } from './data/actions'
+import { FetcherReturn } from './data/fetcher';
+import { Errors } from './elements/Errors'
 
-function App({ fetcher }) {
+function App({ fetcher }: { fetcher: FetcherReturn }) {
   const [state, dispatch] = useReducer(reducer, initialState)
   const actions = Actions({ fetcher, dispatch })
 
@@ -32,42 +34,50 @@ function App({ fetcher }) {
 
   const [navActive, setNavActive] = useState(0)
 
-  const addAuth = (auth_token, fn) => (props) => {
-    props = {
-      ...(props || {}),
-      auth_token,
-    }
-    return fn(props)
-  }
-
   const usersPage = <UsersPage
     users={state.users}
-    groups={state.users}
+    allGroups={state.groups}
+    myGroups={state.subscriptions[state.selectedUser] || []}
     selectedUser={state.selectedUser}
-    subscriptions={state.subscriptions[state.selectedUser] || []}
     setSelectedUser={actions.selectUser}
-    createUser={addAuth(state.auth_token, actions.createUser)}
-    fixHome={addAuth(state.auth_token, actions.fixHome)}
-    addMember={addAuth(state.auth_token, actions.addMember)}
-    listSubscriptions={addAuth(state.auth_token, actions.listSubscriptions)}
+    createUser={async ({ user }: { user: string }) =>
+      actions.createUser({ user, auth_token: state.auth_token })}
+    fixHome={async ({ user }: { user: string }) =>
+      actions.fixHome({ user, auth_token: state.auth_token })}
+    fixPermissions={async ({ user }: { user: string }) =>
+      actions.userPermissions({ user, auth_token: state.auth_token })}
+    addMember={async ({ user, group }: { user: string, group: string }) =>
+      actions.addMember({ user, group, auth_token: state.auth_token })}
+    listSubscriptions={async ({ user }: { user: string }) =>
+      actions.listSubscriptions({ user, auth_token: state.auth_token })}
   />
 
   const groupPage = <GroupPage
     groups={state.groups}
+    allUsers={state.users}
+    myUsers={state.members[state.selectedGroup] || []}
     selectedGroup={state.selectedGroup}
     setSelectedGroup={actions.selectGroup}
-    createGroup={addAuth(state.auth_token, actions.createGroup)}
+    addMember={async ({ user, group }: { user: string, group: string }) =>
+      actions.addMember({ user, group, auth_token: state.auth_token })}
+    fixPermissions={async ({ group }: { group: string }) =>
+      actions.groupPermissions({ group, auth_token: state.auth_token })}
+    listMembers={async ({ group }: { group: string }) =>
+      actions.listMembers({ group, auth_token: state.auth_token })}
+    createGroup={async ({ group }: { group: string }) =>
+      actions.createGroup({ group, auth_token: state.auth_token })}
   />
 
   const loginPage = <LoginPage
     login={actions.login}
-    logout={addAuth(actions.logout)}
+    logout={async () =>
+      actions.logout({ auth_token: state.auth_token })}
     isLogged={!!state.auth_token}
   />
 
   const tabs = [
     { title: "Users", element: usersPage },
-    // { title: "Groups", element: groupPage },
+    { title: "Groups", element: groupPage },
     { title: <Fragment>{state.auth_token ? state.login : 'Login'}</Fragment>, element: loginPage },
   ]
 
@@ -88,13 +98,7 @@ function App({ fetcher }) {
         </div>
         <div className="row">
           <div className="col-12">
-            <ul>
-              {state.errors.map((x, i) =>
-                <li key={i}>
-                  {x.toString()}
-                </li>
-              )}
-            </ul>
+            <Errors errors={state.errors} />
           </div>
         </div>
         <div className="row">
@@ -105,9 +109,6 @@ function App({ fetcher }) {
               ) : ""
             ))}
           </div>
-          <Fragment>
-            {(state.error) ? JSON.stringify(state.error) : ''}
-          </Fragment>
         </div>
       </div>
     </div >

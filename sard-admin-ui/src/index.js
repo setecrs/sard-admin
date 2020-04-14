@@ -6,16 +6,16 @@ import Fetcher, { MockFetcher } from './data/fetcher';
 // import * as serviceWorker from './serviceWorker';
 
 const baseUrl = process.env.REACT_APP_BASE_URL || ''
-let fetcher = Fetcher({baseUrl: baseUrl?baseUrl:''})
+let fetcher = Fetcher({ baseUrl })
 if (['test', 'development'].includes(process.env.NODE_ENV)) {
-  if (! process.env.hasOwnProperty('REACT_APP_DONT_USE_MOCK')){
+  if (!process.env.hasOwnProperty('REACT_APP_DONT_USE_MOCK')) {
     fetcher = MockFetcher()
   }
 }
 
 ReactDOM.render(
   <React.StrictMode>
-    <App fetcher={fetcher}/>
+    <App fetcher={fetcher} />
   </React.StrictMode>,
   document.getElementById('root')
 );

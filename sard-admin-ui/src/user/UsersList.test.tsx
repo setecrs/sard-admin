@@ -1,10 +1,13 @@
-import React from 'react';
 import { render } from '@testing-library/react';
 import { UsersList } from './UsersList';
 
 
 test('UserView renders', () => {
-    const userView = UsersList({ users: [] })
+    const userView = UsersList({
+        users: [],
+        selectedUser: 'user1',
+        setSelectedUser: async () => { },
+    })
     const { baseElement } = render(userView);
     expect(baseElement).not.toBeNull()
 });
@@ -12,8 +15,10 @@ test('UserView renders', () => {
 test('UserView has 2 users', () => {
     const userView = UsersList({
         users: ['user1', 'user2'],
+        selectedUser: 'user1',
+        setSelectedUser: async () => { },
     })
-    const { debug, baseElement } = render(userView);
+    const { baseElement } = render(userView);
     const ul = baseElement.querySelector('#user_list')
     expect(ul).not.toBeNull()
     expect(ul.childNodes).toHaveLength(2)

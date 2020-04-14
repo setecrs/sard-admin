@@ -10,7 +10,8 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         },
         listUsers: async ({ auth_token }: { auth_token: string }) => {
             try {
-                const users = await fetcher.listUsers({ auth_token })
+                const { users } = await fetcher.listUsers({ auth_token })
+                console.log({users})
                 dispatch({ type: 'set users', payload: users })
             } catch (e) {
                 console.error(e)
@@ -19,7 +20,7 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         },
         listGroups: async ({ auth_token }: { auth_token: string }) => {
             try {
-                const groups = await fetcher.listGroups({ auth_token })
+                const { groups } = await fetcher.listGroups({ auth_token })
                 dispatch({ type: 'set groups', payload: groups })
             } catch (e) {
                 console.error(e)
@@ -29,7 +30,7 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         createUser: async ({ user, auth_token }: { user: string, auth_token: string }) => {
             try {
                 await fetcher.createUser({ user, auth_token })
-                const users = await fetcher.listUsers({ auth_token })
+                const { users } = await fetcher.listUsers({ auth_token })
                 dispatch({ type: 'set users', payload: users })
                 dispatch({ type: 'select user', payload: user })
             } catch (e) {
@@ -40,7 +41,7 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         createGroup: async ({ group, auth_token }: { group: string, auth_token: string }) => {
             try {
                 await fetcher.createGroup({ group, auth_token })
-                const groups = await fetcher.listGroups({ auth_token })
+                const { groups } = await fetcher.listGroups({ auth_token })
                 dispatch({ type: 'set groups', payload: groups })
                 dispatch({ type: 'select group', payload: group })
             } catch (e) {
@@ -96,6 +97,14 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
                 dispatch({ type: 'error', payload: e })
             }
         },
+        groupPermissions: async ({ group, auth_token }: { group: string, auth_token: string }) => {
+            try {
+                await fetcher.groupPermissions({ group, auth_token })
+            } catch (e) {
+                console.error(e)
+                dispatch({ type: 'error', payload: e })
+            }
+        },
         setPassword: async ({ user, password, auth_token }: { user: string, password: string, auth_token: string }) => {
             try {
                 await fetcher.setPassword({ user, password, auth_token })
@@ -106,7 +115,7 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         },
         login: async ({ user, password }: { user: string, password: string }) => {
             try {
-                const {auth_token} = await fetcher.login({ user, password })
+                const { auth_token } = await fetcher.login({ user, password })
                 dispatch({
                     type: 'login', payload: {
                         login: user,

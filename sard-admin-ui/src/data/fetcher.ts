@@ -83,7 +83,6 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
         }
         const URL = baseUrl + suffixUrl
         const req = new Request(URL)
-        console.log('fetcher log:', URL, options)
         const resp = await fetch(req, options)
         if (resp.status === 401) {
             throw new UnauthorizedError()
@@ -139,7 +138,7 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
         },
         listUsers: async ({ auth_token }) => {
             const j = await helper({ baseUrl, auth_token, suffixUrl: '/user/' })
-            return j.users
+            return j
         },
         listSubscriptions: async ({ user, auth_token }) => {
             const j = await helper({ baseUrl, auth_token, suffixUrl: `/user/${user}` })

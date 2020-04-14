@@ -1,3 +1,4 @@
+import assert from 'assert'
 
 export interface InitialStateType {
     login: string,
@@ -29,18 +30,24 @@ export function reducer(state: InitialStateType, action: any): InitialStateType 
     switch (action.type) {
         case 'select user':
             const user: string = action.payload
+            assert(typeof (user) === 'string', JSON.stringify(user))
             return { ...state, selectedUser: user }
         case 'select group':
             const group: string = action.payload
+            assert(typeof (group) === 'string', JSON.stringify(group))
             return { ...state, selectedGroup: group }
         case 'set users':
             const users: string[] = action.payload
+            assert(Array.isArray(users), JSON.stringify(users))
             return { ...state, users }
         case 'set groups':
             const groups: string[] = action.payload
+            assert(Array.isArray(groups), JSON.stringify(groups))
             return { ...state, groups }
         case 'login':
-            const {login, auth_token}:{login:string, auth_token:string} = action.payload
+            const { login, auth_token }: { login: string, auth_token: string } = action.payload
+            assert(typeof (login) === 'string', JSON.stringify(login))
+            assert(typeof (auth_token) === 'string', JSON.stringify(auth_token))
             return { ...state, login, auth_token }
         case 'logout':
             return { ...state, auth_token: '', login: '' }

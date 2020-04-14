@@ -1,23 +1,9 @@
 import { MockFetcher, Fetcher } from "./fetcher"
 
-test('fetch and MockFecher have same signatures', () => {
-    const fetcher = Fetcher({ baseUrl: '' })
-    const mockFetcher = MockFetcher()
-    for (const fn_name in fetcher) {
-        if (fetcher.hasOwnProperty(fn_name)) {
-            const fn = fetcher[fn_name];
-            expect(fn).toBeInstanceOf(Function)
-            expect(mockFetcher).toHaveProperty(fn_name)
-            const fnm = mockFetcher[fn_name];
-            expect(fnm).toBeInstanceOf(Function)
-        }
-    }
-})
-
 function chooseFetcher() {
     if (process.env.hasOwnProperty('REACT_APP_SARD_ADMIN_URL')) {
         // for integrations tests or development
-        return Fetcher({ baseUrl: process.env.REACT_APP_SARD_ADMIN_URL })
+        return Fetcher({ baseUrl: process.env.REACT_APP_SARD_ADMIN_URL||'' })
     } else {
         return MockFetcher()
     }
