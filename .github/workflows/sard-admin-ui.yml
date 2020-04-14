@@ -24,7 +24,7 @@ jobs:
       - run: yarn test
         working-directory: ./${{env.FOLDER}}
 
-  build:
+  deploy:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     needs: unit-tests
@@ -37,15 +37,6 @@ jobs:
       - name: Docker build latest
         run: docker build --cache-from ${{env.REPO}}:latest ${{env.FOLDER}} -t ${{env.REPO}}:latest
         
-  deploy:
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    needs:
-      - unit-tests
-      - build
-    steps:
-      - uses: actions/checkout@v2
-
       - name: Docker login
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
         
