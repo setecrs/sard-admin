@@ -56,7 +56,10 @@ def _create_app(auth, User, Group):
         def get(self, group):
             """Lista membros do grupo"""
             try:
-                return Group(group).users()
+                return {
+                    "group": group,
+                    "users": Group(group).users(),
+                }
             except Exception as e:
                 if DEBUG:
                     log.exception(e)
@@ -88,7 +91,8 @@ def _create_app(auth, User, Group):
             except:
                 return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
             try:
-                return Group(group).permissions()
+                Group(group).permissions()
+                return ('', http.HTTPStatus.NO_CONTENT)
             except Exception as e:
                 if DEBUG:
                     log.exception(e)
