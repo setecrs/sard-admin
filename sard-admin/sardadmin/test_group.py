@@ -57,7 +57,7 @@ class GroupTest(unittest.TestCase):
     def test_folder(self):
         if os.environ.get('TESTS') != 'INTEGRATION':
             self.skipTest('env TESTS!=INTEGRATION')
-        Group('folder', history_timeout=0.1).create()
+        Group('folder', history_timeout=1.0).create()
         self.assertListEqual(Group.listAll(), groups + ['folder'])
         Group.history[-1]['thread'].join()
         self.assertEqual(os.path.exists('/operacoes/folder'), True)
