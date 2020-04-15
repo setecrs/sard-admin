@@ -248,9 +248,11 @@ class APIUserTest(unittest.TestCase):
         self.assertEqual(resp.ok, True)
         resp = requests.get(prefix_url + '/user/userList')
         data = resp.json()
-        self.assertListEqual(
-            sorted(data['groups']),
-            sorted(['groupA', 'groupB', 'groupC', 'userList', 'Domain Users']))
+        expected = ['groupA', 'groupB', 'groupC', 'userList', 'Domain Users']
+        for got in data['groups']:
+            self.assertIn(got, expected)
+        for e in expected:
+            self.assertIn('userList', Group(e).users())
 
     def test_double_add(self):
         resp = requests.post(prefix_url + '/user/double_add2', headers=dict(

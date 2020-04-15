@@ -33,12 +33,12 @@ class User:
         return self.name in User.listAll()
 
     def groups(self):
-        "List of groups of which user is a member"
-        result = []
-        for group in Group.listAll():
-            if self.name in Group(group).users():
-                result.append(group)
-        return result
+        "List of groups of which user is a member. It may be outdated, since it uses cache"
+        proc = run(['getent', 'group', self.name], check=True, encoding='utf-8', stdout=PIPE)
+        line = proc.stdout.strip()
+        users = line.split(':',3)[3]
+        users = users.split(',')
+        return users
 
     def create(self, password=None):
         """Creates a new user, creates a group with the same name,
@@ -65,7 +65,7 @@ class User:
         if not self.exists():
             raise Exception('User does not exist')
         run(['smbldap-groupmod', '-m', self.name, group], check=True)
-        self.populateHome()
+        self.populateHome(extraGroups=[group])
 
     def resetPassword(self, password=None):
         """Resets the user password.
@@ -89,11 +89,21 @@ class User:
                     continue
                 os.chown(fpath, uid, gid)
 
-    def populateHome(self):
-        "Populates the user's home directory with links to their groups"
+    def populateHome(self, extraGroups=None):
+        """Populates the user's home directory with links to their groups
+        extraGroups is a list of new groups that should be checked because
+        the user membership list is cached and may be outdated.
+        """
         os.makedirs(f'/home/{self.name}/Desktop/operacoes', mode=0o777, exist_ok=True)
-        mygroups = self.groups()
-        mygroups.remove('Domain Users')
+        exclude = [
+            'Domain Users',
+            'Domain Admins',            
+        ]
+        mygroups = set([x for x in self.groups() if not x in exclude])
+        if (not extraGroups is None):
+            for g in extraGroups:
+                if self.name in Group(g).users():
+                    mygroups.add(g)
         for g in mygroups:
             if os.path.islink(f'/home/{self.name}/Desktop/operacoes'):
                 break
