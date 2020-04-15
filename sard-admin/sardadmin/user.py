@@ -36,7 +36,7 @@ class User:
         "List of groups of which user is a member. It may be outdated, since it uses cache"
         proc = run(['id', '-znG', self.name], check=True, encoding='utf-8', stdout=PIPE)
         line = proc.stdout.strip()
-        users = users.split('\x00')
+        users = line.split('\x00')
         users = [x for x in users if x]
         return users
 
