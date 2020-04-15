@@ -82,4 +82,4 @@ services:
       TESTS: "INTEGRATION"
     volumes:
       - ../:/app/
-    command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest']
+    command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest -v']
