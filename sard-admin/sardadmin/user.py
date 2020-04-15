@@ -34,10 +34,10 @@ class User:
 
     def groups(self):
         "List of groups of which user is a member. It may be outdated, since it uses cache"
-        proc = run(['getent', 'group', self.name], check=True, encoding='utf-8', stdout=PIPE)
+        proc = run(['id', '-znG', self.name], check=True, encoding='utf-8', stdout=PIPE)
         line = proc.stdout.strip()
-        users = line.split(':',3)[3]
-        users = users.split(',')
+        users = users.split('\x00')
+        users = [x for x in users if x]
         return users
 
     def create(self, password=None):
