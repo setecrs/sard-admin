@@ -11,7 +11,6 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
         listUsers: async ({ auth_token }: { auth_token: string }) => {
             try {
                 const { users } = await fetcher.listUsers({ auth_token })
-                console.log({users})
                 dispatch({ type: 'set users', payload: users })
             } catch (e) {
                 console.error(e)
