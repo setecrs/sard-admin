@@ -87,7 +87,8 @@ class User:
                 fpath = os.path.join(dirpath, x)
                 if not os.path.exists(fpath):
                     continue
-                os.chown(fpath, uid, gid)
+                if not os.path.islink(fpath):
+                    os.chown(fpath, uid, gid)
 
     def populateHome(self, extraGroups=None):
         """Populates the user's home directory with links to their groups
