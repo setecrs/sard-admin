@@ -26,7 +26,7 @@ server {
   }
 
   location /lock/ {
-    proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/ ;
+    proxy_pass http://${LOCKER_SERVICE_HOST}:${LOCKER_SERVICE_PORT}/ ;
   }
 
   location / {
