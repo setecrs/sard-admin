@@ -8,8 +8,8 @@ import { LockFetcher, MockLockFetcher } from './data/lock_fetcher'
 // import * as serviceWorker from './serviceWorker';
 
 const baseUrl = process.env.REACT_APP_BASE_URL || ''
-const graphqlURL = process.env.REACT_APP_GRAPHQL_URL || ''
-const lockURL = process.env.REACT_APP_LOCK_URL || ''
+const graphqlURL = process.env.REACT_APP_GRAPHQL_URL || '/graphql'
+const lockURL = process.env.REACT_APP_LOCK_URL || '/lock'
 
 let fetcher = Fetcher({ baseUrl })
 let cardFetcher = CardFetcher({ graphqlURL })

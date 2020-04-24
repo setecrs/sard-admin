@@ -21,6 +21,14 @@ server {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/jobs/ ;
   }
 
+  location /graphql/ {
+    proxy_pass http://${WEKAN_GRAPHQL_NOAUTH_SERVICE_HOST}:${WEKAN_GRAPHQL_NOAUTH_SERVICE_PORT}/graphql/ ;
+  }
+
+  location /lock/ {
+    proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/ ;
+  }
+
   location / {
     root   /usr/share/nginx/html;
   }

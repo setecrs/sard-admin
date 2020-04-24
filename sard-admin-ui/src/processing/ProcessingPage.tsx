@@ -56,7 +56,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
             >Refresh</button>
         </div>
 
-        <h2>Todo - {todo.length}</h2>
+        <h3>Todo - {todo.length}</h3>
         <ul>
             {todo.map(x => (
                 <li key={x.id}>
@@ -65,7 +65,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
             ))}
         </ul>
 
-        <h2>Running - {running.length}</h2>
+        <h3>Running - {running.length}</h3>
         <ul>
             {running.map(x => (
                 <li key={x.id}>
@@ -78,7 +78,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
             ))}
         </ul>
 
-        <h2>Locks - {locks.length}</h2>
+        <h3>Locks - {locks.length}</h3>
         <ul>
             {locks.map(x => (
                 <li key={x}>
@@ -91,7 +91,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
             ))}
         </ul>
 
-        <h2>Failed - {failed.length}</h2>
+        <h3>Failed - {failed.length}</h3>
         <ul>
             {failed.map(x => (
                 <li key={x.id}>
@@ -100,7 +100,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
             ))}
         </ul>
 
-        <h2>Done - {done.length}</h2>
+        <h3>Done - {done.length}</h3>
         <ul>
             {done.map(x => (
                 <li key={x.id}>
