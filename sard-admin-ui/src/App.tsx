@@ -8,9 +8,12 @@ import { LoginPage } from './login/LoginPage'
 import { initialState, reducer } from './data/state'
 import { Actions } from './data/actions'
 import { FetcherReturn } from './data/fetcher';
+import { CardFetcherType } from './data/card_fetcher';
+import { LockFetcherType } from './data/lock_fetcher'
+import { ProcessingPage } from './processing/ProcessingPage'
 import { Errors } from './elements/Errors'
 
-function App({ fetcher }: { fetcher: FetcherReturn }) {
+function App({ fetcher, cardFetcher, lockFetcher }: { fetcher: FetcherReturn, cardFetcher: CardFetcherType, lockFetcher: LockFetcherType }) {
   const [state, dispatch] = useReducer(reducer, initialState)
   const actions = Actions({ fetcher, dispatch })
 
@@ -75,10 +78,15 @@ function App({ fetcher }: { fetcher: FetcherReturn }) {
     isLogged={!!state.auth_token}
   />
 
+  const processingPage = <ProcessingPage card_fetcher={cardFetcher} lockFetcher={lockFetcher} />
+
   const tabs = [
+    {
+      title: <Fragment>{state.auth_token ? state.login : 'Login'}</Fragment>, element: loginPage
+    },
     { title: "Users", element: usersPage },
     { title: "Groups", element: groupPage },
-    { title: <Fragment>{state.auth_token ? state.login : 'Login'}</Fragment>, element: loginPage },
+    { title: "Processing", element: processingPage }
   ]
 
   const navBar = NavList({
