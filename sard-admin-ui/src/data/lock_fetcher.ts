@@ -2,7 +2,7 @@ export type LockFetcherType = {
     getLocks: () => Promise<string[]>
 }
 
-export function LockFetcher({ lockURL }:{ lockURL:string }): LockFetcherType {
+export function LockFetcher({ lockURL }: { lockURL: string }): LockFetcherType {
     return {
         getLocks: async () => {
             const resp = await fetch(lockURL)
@@ -29,5 +29,5 @@ export async function getLocksCore(resp: Response) {
     }
     const text = await resp.text()
     const lines = text.split('\n')
-    return lines.map(x => x.split(' ')[0]).filter(x => !!x)
+    return lines.map(x => x.split(' ')[0]).filter(x => !!x).filter(x => !["<a", "<br>"].includes(x))
 }
