@@ -29,5 +29,5 @@ export async function getLocksCore(resp: Response) {
     }
     const text = await resp.text()
     const lines = text.split('\n')
-    return lines.map(x => x.split(' ')[0])
+    return lines.map(x => x.split(' ')[0]).filter(x => !!x)
 }
