@@ -54,7 +54,7 @@ export async function listProcessingCore(resp: Response): Promise<ProcessingCard
     }
     const j = await resp.json()
     const { cards } = j.data.board.list
-    const result = cards.map((x: any) => {
+    const result = cards.filter((x: any) => !x.archived).map((x: any) => {
         const p: ProcessingCard = {
             id: x.title,
             properties: {},
