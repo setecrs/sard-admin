@@ -49,6 +49,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run: docker-compose up -d --abort-on-container-exit ldap
+        working-directory: ./${{env.FOLDER}}/tests
+      
+      - run: sleep 5
+
+      - run: docker-compose up -d --abort-on-container-exit api
+        working-directory: ./${{env.FOLDER}}/tests
+
+      - run: sleep 3
+
       - run: docker-compose up --abort-on-container-exit integration-tests
         working-directory: ./${{env.FOLDER}}/tests
 
