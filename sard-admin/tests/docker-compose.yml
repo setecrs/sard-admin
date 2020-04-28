@@ -66,7 +66,7 @@ services:
       - ../:/app/
     entrypoint: ['python3']
     command: ['-m', 'unittest']
-  integration-tests:
+  system-tests:
     build: ..
     restart: "no"
     depends_on:
@@ -79,7 +79,7 @@ services:
       LDAP_ADMIN_PASSWORD: "TESTPASSWORD"
       LDAP_SERVER: "ldap"
       LANG: "en_US.UTF-8"
-      TESTS: "INTEGRATION"
+      TESTS: "SYSTEM"
     volumes:
       - ../:/app/
     command: ['bash', '-c', 'while ! curl -f http://api:80/group/; do sleep 0.1; done; python3 -m unittest -v']

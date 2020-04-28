@@ -9,7 +9,7 @@ import sardadmin.mock
 groups = sardadmin.mock.Group.listAll()[:]
 users = sardadmin.mock.User.listAll()[:]
 
-if os.environ.get('TESTS') == 'INTEGRATION':
+if os.environ.get('TESTS') == 'SYSTEM':
     Group = sardadmin.group.Group
     User = sardadmin.user.User
     Auth = sardadmin.auth.Auth
@@ -53,8 +53,8 @@ class UserTest(unittest.TestCase):
         self.assertListEqual(Group.listAll(), groups)
 
     def test_permissions(self):
-        if os.environ.get('TESTS') != 'INTEGRATION':
-            self.skipTest('env TESTS!=INTEGRATION')
+        if os.environ.get('TESTS') != 'SYSTEM':
+            self.skipTest('env TESTS!=SYSTEM')
         mypath = '/home/permissions/a/b/c/d/e/f'
         os.makedirs(mypath, mode=0o000)
         User('permissions').create()
@@ -65,7 +65,7 @@ class UserTest(unittest.TestCase):
         os.removedirs(mypath)
 
     def test_populateHome(self):
-        if os.environ.get('TESTS') != 'INTEGRATION':
-            self.skipTest('env TESTS!=INTEGRATION')
+        if os.environ.get('TESTS') != 'SYSTEM':
+            self.skipTest('env TESTS!=SYSTEM')
         User('populateHome').create()
         self.assertEqual(os.path.exists('/home/populateHome/Desktop/operacoes'), True)

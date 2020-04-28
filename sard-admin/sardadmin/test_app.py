@@ -12,7 +12,7 @@ import sardadmin.mock
 groups = sardadmin.mock.Group.listAll()[:]
 users = sardadmin.mock.User.listAll()[:]
 
-if os.environ.get('TESTS') == 'INTEGRATION':
+if os.environ.get('TESTS') == 'SYSTEM':
     prefix_url = 'http://api:80'
     Group = sardadmin.group.Group
     User = sardadmin.user.User

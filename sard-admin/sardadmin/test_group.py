@@ -12,7 +12,7 @@ import sardadmin.mock
 groups = sardadmin.mock.Group.listAll()[:]
 users = sardadmin.mock.User.listAll()[:]
 
-if os.environ.get('TESTS') == 'INTEGRATION':
+if os.environ.get('TESTS') == 'SYSTEM':
     Group = sardadmin.group.Group
     User = sardadmin.user.User
     Auth = sardadmin.auth.Auth
@@ -55,8 +55,8 @@ class GroupTest(unittest.TestCase):
         self.assertListEqual(Group.listAll(), groups)
 
     def test_folder(self):
-        if os.environ.get('TESTS') != 'INTEGRATION':
-            self.skipTest('env TESTS!=INTEGRATION')
+        if os.environ.get('TESTS') != 'SYSTEM':
+            self.skipTest('env TESTS!=SYSTEM')
         Group('folder', history_timeout=1.0).create()
         self.assertListEqual(Group.listAll(), groups + ['folder'])
         Group.history[-1]['thread'].join()
@@ -82,8 +82,8 @@ class GroupTest(unittest.TestCase):
             job['thread'].join()
 
     def test_permissions(self, mode=0o000):
-        if os.environ.get('TESTS') != 'INTEGRATION':
-            self.skipTest('env TESTS!=INTEGRATION')
+        if os.environ.get('TESTS') != 'SYSTEM':
+            self.skipTest('env TESTS!=SYSTEM')
         if os.path.exists('/operacoes/permissions'):
             run(['rm', '-r', '/operacoes/permissions'], check=True)
         Group('permissions', history_timeout=0.1).create()
