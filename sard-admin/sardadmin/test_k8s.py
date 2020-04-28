@@ -51,7 +51,13 @@ class TestKubernetes(unittest.TestCase):
 
     def test_getEvidence(self):
         resp = requests.Response()
-        resp.status_code = 500
-        resp._content = b'testing'
-        with self.assertRaises(MetricsException):
-            _getEvidence(resp)
+        resp.status_code = 200
+        resp._content = b"""# HELP ipedworker_runIped_calls Number of calls to runIped
+# TYPE ipedworker_runIped_calls counter
+ipedworker_runIped_calls{evidence="/operacoes/operacao_teste/M160006/M160006.dd",hostname="ipedworker-ctlln"} 1
+# HELP ipedworker_runIped_running Whether IPED is running or not
+# TYPE ipedworker_runIped_running gauge
+ipedworker_runIped_running{evidence="/operacoes/operacao_teste/M160006/M160006.dd",hostname="ipedworker-ctlln"} 1
+"""
+        evidence = _getEvidence(resp)
+        self.assertEqual(evidence, "/operacoes/operacao_teste/M160006/M160006.dd")

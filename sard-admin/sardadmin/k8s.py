@@ -2,6 +2,7 @@ from typing import List
 from collections import namedtuple
 from kubernetes import client, config
 import requests
+from prometheus_client.parser import text_string_to_metric_families
 
 IPEDWorker = namedtuple('IPEDWorker', [
     'name',
@@ -30,6 +31,11 @@ class MetricsException(Exception):
 def _getEvidence(resp:requests.Response) -> str:
     if (not resp.ok):
         raise MetricsException("Could not get metrics: "+ resp.text)
+    for family in text_string_to_metric_families(resp.text):
+        for sample in family.samples:
+            if sample.name=='ipedworker_runIped_running':
+                return sample.labels['evidence']
+    return ''
 
 def _listWorkers(resp:client.V1PodList) -> List[IPEDWorker]:
     result:List[IPEDWorker] = []
