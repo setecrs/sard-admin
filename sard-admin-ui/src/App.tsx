@@ -78,7 +78,7 @@ function App({ fetcher, cardFetcher, lockFetcher }: { fetcher: FetcherReturn, ca
     isLogged={!!state.auth_token}
   />
 
-  const processingPage = <ProcessingPage card_fetcher={cardFetcher} lockFetcher={lockFetcher} />
+  const processingPage = <ProcessingPage fetcher={fetcher} card_fetcher={cardFetcher} lockFetcher={lockFetcher} />
 
   const tabs = [
     {

@@ -1,22 +1,27 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import { CardFetcherType, ProcessingCard } from '../data/card_fetcher'
 import { LockFetcherType } from '../data/lock_fetcher'
+import { FetcherReturn, Worker } from '../data/fetcher'
+import { WorkerList } from './WorkerList'
 
-export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: CardFetcherType, lockFetcher: LockFetcherType }) {
+export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher: FetcherReturn, card_fetcher: CardFetcherType, lockFetcher: LockFetcherType }) {
     const [locks, setLocks] = useState<string[]>([])
     const [cards, setCards] = useState<ProcessingCard[]>([])
     const [failed, setFailed] = useState<ProcessingCard[]>([])
     const [todo, setTodo] = useState<ProcessingCard[]>([])
     const [done, setDone] = useState<ProcessingCard[]>([])
     const [running, setRunning] = useState<ProcessingCard[]>([])
+    const [workers, setWorkers] = useState<Worker[]>([])
     const [error, setError] = useState('')
 
     async function refresh() {
         try {
             const p_cards = card_fetcher.listProcessing()
             const p_locks = lockFetcher.getLocks()
+            const p_workers = fetcher.listWorkers()
             setCards(await p_cards)
             setLocks(await p_locks)
+            setWorkers(await p_workers)
         } catch (e) {
             setError(e.message)
         }
@@ -41,7 +46,7 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
     }, [cards])
 
     useEffect(() => {
-        refresh()
+        setInterval(refresh, 1000)
     }, [])
 
     return <div>
@@ -90,6 +95,9 @@ export function ProcessingPage({ card_fetcher, lockFetcher }: { card_fetcher: Ca
                 </li>
             ))}
         </ul>
+
+        <h3>IPED workers - {workers.length}</h3>
+        <WorkerList workers={workers} />
 
         <h3>Failed - {failed.length}</h3>
         <ul>

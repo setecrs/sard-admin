@@ -43,4 +43,11 @@ describe('User', () => {
         await fetcher.createUser({ user: 'user1', auth_token: '' })
         await fetcher.setPassword({ user: 'user1', password: 'pass' , auth_token: ''})
     })
-})
+
+    test('list workers: /workers/', async () => {
+        const fetcher = chooseFetcher()
+        const workers = await fetcher.listWorkers()
+        expect(workers).toHaveLength(1)
+        expect(workers[0]).toHaveProperty('host_ip')
+        expect(workers[0].host_ip).toEqual('1.2.3.4')
+    })})

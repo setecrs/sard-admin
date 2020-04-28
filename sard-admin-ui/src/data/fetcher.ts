@@ -25,7 +25,18 @@ type Job = {
     output: string,
 }
 
+export type Worker = {
+    name: string,
+    pod_ip: string,
+    host_ip: string,
+    node_name: string,
+    ready: boolean,
+    image: string,
+    evidence?: string,
+}
+
 export type FetcherReturn = {
+    listWorkers: () => Promise<Worker[]>,
     listJobs: ({ auth_token }: { auth_token: string }) =>
         Promise<{ [key: string]: Job }>,
     listJobsHistory: ({ auth_token }: { auth_token: string }) =>
@@ -106,6 +117,10 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
         return j
     }
     return {
+        listWorkers: async () => {
+            const j = await helper({baseUrl, suffixUrl: '/workers/'})
+            return j
+        },
         listJobs: async ({ auth_token }: { auth_token: string }) => {
             const j = await helper({ baseUrl, auth_token, suffixUrl: '/jobs/' })
             return j.jobs
@@ -210,7 +225,19 @@ export function MockFetcher(): FetcherReturn {
     const subscriptions: { [key: string]: string[] } = {}
     const jobs: { [key: string]: Job } = {}
     const jobsHistory: Job[] = []
+    const workers: Worker[] = [
+        {
+            host_ip:'1.2.3.4',
+            pod_ip: '5.6.7.8',
+            image: 'asfd/worker:1234',
+            name: 'ipedworker-298347',
+            node_name: 'sardcloudXX',
+            ready: false,
+            evidence: '/ops/A/B/imagem.dd'
+        },
+    ]
     return {
+        listWorkers: async () => workers,
         listJobs: async () => jobs,
         listJobsHistory: async () => jobsHistory,
         listUsers: async () => {
