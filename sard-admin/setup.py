@@ -14,6 +14,7 @@ setup(
         "requests",
         "ldap3",
         "kubernetes",
+        "prometheus_client"
         "PyJWT"
     ],
 )
