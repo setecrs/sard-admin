@@ -56,7 +56,7 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
     }, [cards])
 
     useEffect(() => {
-        setInterval(refresh, 1000)
+        refresh()
     }, [])
 
     return <div>
