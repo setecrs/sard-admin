@@ -21,6 +21,10 @@ server {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/jobs/ ;
   }
 
+  location /workers/ {
+    proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/workers/ ;
+  }
+
   location /graphql/ {
     proxy_pass http://${WEKAN_GRAPHQL_NOAUTH_SERVICE_HOST}:${WEKAN_GRAPHQL_NOAUTH_SERVICE_PORT}/graphql/ ;
   }
