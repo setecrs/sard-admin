@@ -19,9 +19,12 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
             const p_cards = card_fetcher.listProcessing()
             const p_locks = lockFetcher.getLocks()
             const p_workers = fetcher.listWorkers()
-            setCards(await p_cards)
-            setLocks(await p_locks)
-            setWorkers(await p_workers)
+            const _cards = await p_cards
+            const _locks = await p_locks
+            const _workers = await p_workers
+            setCards(_cards.sort((a, b) => a.id.localeCompare(b.id)))
+            setLocks(_locks.sort())
+            setWorkers(_workers.sort((a, b) => a.node_name.localeCompare(b.node_name))))
         } catch (e) {
             setError(e.message)
         }
