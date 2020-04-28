@@ -151,7 +151,7 @@ class APIGroupTest(unittest.TestCase):
         ))
         self.assertEqual(resp.text, "")
         self.assertEqual(resp.ok, True)
-        for _ in range(5):
+        for _ in range(20):
             resp = requests.post(prefix_url + '/group/double_perm/permissions', headers=dict(
                 Authorization=f'Bearer {token}'
             ))
