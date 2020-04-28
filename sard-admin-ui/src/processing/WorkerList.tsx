@@ -21,15 +21,19 @@ export function OneWorker({ worker, isLocked, isRunning }: { worker: Worker, isL
     {" - "}
     {worker.name}
     {" - "}
-    {worker.evidence || 'no evidence'}
-    {" - "}
-    {isRunning(worker.evidence) ?
-      <span style={{ color: 'green' }}>running</span>
-      : <span style={{ color: 'red' }}>not running</span>}
-    {" - "}
-    {isLocked(worker.evidence) ?
-      <span style={{ color: 'green' }}> locked</span>
-      : <span style={{ color: 'red' }}>not locked</span>}
+    {worker.evidence ?
+      <Fragment>
+        worker.evidence
+        {" - "}
+        {isRunning(worker.evidence) ?
+          <span style={{ color: 'green' }}>running</span>
+          : <span style={{ color: 'red' }}>not running</span>}
+        {" - "}
+        {isLocked(worker.evidence) ?
+          <span style={{ color: 'green' }}> locked</span>
+          : <span style={{ color: 'red' }}>not locked</span>}
+      </Fragment>
+      : 'no evidence'}
 
   </Fragment>
   return <Fragment>
