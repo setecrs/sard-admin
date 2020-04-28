@@ -21,7 +21,7 @@ class K8s:
         return _listWorkers(resp)
 
 def getEvidence(pod_ip, pod_port=80) -> str:
-    resp = requests.get(f"http://${pod_ip}:{pod_port}/metrics")
+    resp = requests.get(f"http://{pod_ip}:{pod_port}/metrics")
     return _getEvidence(resp)
 
 class MetricsException(Exception):
