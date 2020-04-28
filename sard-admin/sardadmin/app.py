@@ -7,13 +7,14 @@ from flask import Flask, make_response, request
 from flask_restplus import Resource, Api, fields
 from werkzeug.exceptions import BadRequest
 
-from .user import  User
-from .group import  Group
-from .auth import  Auth
+from .user import User
+from .group import Group
+from .auth import Auth
 from .check_request import CheckRequest
 from .k8s import K8s, getEvidence
 
-DEBUG=('DEBUG' in os.environ)
+DEBUG = ('DEBUG' in os.environ)
+
 
 def create_app(ldap_server=None, jwt_secret=None):
     if ldap_server is None:
@@ -25,9 +26,10 @@ def create_app(ldap_server=None, jwt_secret=None):
     auth = Auth(jwt_secret, ldap_server)
     return _create_app(auth, User, Group)
 
+
 def _create_app(auth, User, Group):
-    app = Flask(__name__)           #  Create a Flask WSGI appliction
-    api = Api(app)                  #  Create a Flask-RESTPlus API
+    app = Flask(__name__)  # Create a Flask WSGI appliction
+    api = Api(app)  # Create a Flask-RESTPlus API
     check_request = CheckRequest(auth, User, Group)
     log = logging.getLogger(__name__)
 
@@ -35,9 +37,9 @@ def _create_app(auth, User, Group):
     class Jobs(Resource):
         def get(self):
             return {
-                "history": [dict((k,h[k]) for k in h if k != 'thread') for h in Group.history],
-                "jobs": dict([(op, dict((k,Group.jobs[op][k]) for k in Group.jobs[op] if k != 'thread')) for op in Group.jobs]),
-                }
+                "history": [dict((k, h[k]) for k in h if k != 'thread') for h in Group.history],
+                "jobs": dict([(op, dict((k, Group.jobs[op][k]) for k in Group.jobs[op] if k != 'thread')) for op in Group.jobs]),
+            }
 
     @api.route('/group/')
     class GroupRoute(Resource):
@@ -125,6 +127,7 @@ def _create_app(auth, User, Group):
                 if DEBUG:
                     log.exception(e)
                 raise BadRequest(dict(error=str(e)))
+
         @api.representation('text/plain')
         def post(self, login):
             """Cria novo usuario"""
