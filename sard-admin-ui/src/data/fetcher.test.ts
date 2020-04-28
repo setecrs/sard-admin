@@ -47,7 +47,7 @@ describe('User', () => {
     test('list workers: /workers/', async () => {
         const fetcher = chooseFetcher()
         const workers = await fetcher.listWorkers()
-        expect(workers).toHaveLength(1)
+        expect(workers).toHaveLength(2)
         expect(workers[0]).toHaveProperty('host_ip')
         expect(workers[0].host_ip).toEqual('1.2.3.4')
     })})
