@@ -235,6 +235,15 @@ export function MockFetcher(): FetcherReturn {
             ready: false,
             evidence: '/ops/A/B/imagem.dd'
         },
+        {
+            host_ip:'1.2.3.5',
+            pod_ip: '5.6.7.9',
+            image: 'asfd/worker:987',
+            name: 'ipedworker-oiewur',
+            node_name: 'sardcloudYY',
+            ready: false,
+            evidence: '/operacoes/ipl_180001/item01-M190005/item01-M190005.dd'
+        },
     ]
     return {
         listWorkers: async () => workers,

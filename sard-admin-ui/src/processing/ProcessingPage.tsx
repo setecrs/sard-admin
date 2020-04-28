@@ -34,8 +34,18 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
         return locks.includes(x)
     }
 
-    function isRunning(x: string) {
+    function isRunning(x: string | undefined) {
+        if (!x) {
+            return false
+        }
         return running.filter(y => y.properties.path == x).length > 0
+    }
+
+    function inWorker(x: string | undefined) {
+        if (!x) {
+            return false
+        }
+        return workers.filter(w => w.evidence == x).length > 0
     }
 
     useEffect(() => {
@@ -74,11 +84,17 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
         <ul>
             {running.map(x => (
                 <li key={x.id}>
-                    {x.id} - {x.properties.path} - {
-                        isLocked(x.properties.path) ?
-                            <span>locked</span>
-                            : <span style={{ color: 'red' }}>not locked</span>
-                    }
+                    {x.id}
+                    {" - "}
+                    {x.properties.path}
+                    {" - "}
+                    {isLocked(x.properties.path) ?
+                        <span style={{ color: 'green' }}>locked</span>
+                        : <span style={{ color: 'red' }}>not locked</span>}
+                    {" - "}
+                    {inWorker(x.properties.path) ?
+                        <span style={{ color: 'green' }}>in worker</span>
+                        : <span style={{ color: 'red' }}>not in worker</span>}
                 </li>
             ))}
         </ul>
@@ -87,17 +103,21 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
         <ul>
             {locks.map(x => (
                 <li key={x}>
-                    {x} - {
-                        isRunning(x) ?
-                            <span>running</span>
-                            : <span style={{ color: 'red' }}>not running</span>
-                    }
+                    {x}
+                    {" - "}
+                    {isRunning(x) ?
+                        <span style={{ color: 'green' }}>running</span>
+                        : <span style={{ color: 'red' }}>not running</span>}
+                    {" - "}
+                    {inWorker(x) ?
+                        <span style={{ color: 'green' }}>in worker</span>
+                        : <span style={{ color: 'red' }}>not in worker</span>}
                 </li>
             ))}
         </ul>
 
         <h3>IPED workers - {workers.length}</h3>
-        <WorkerList workers={workers} />
+        <WorkerList workers={workers} isRunning={isRunning} isLocked={isLocked} />
 
         <h3>Failed - {failed.length}</h3>
         <ul>
