@@ -19,11 +19,9 @@ export function OneWorker({ worker, isLocked, isRunning }: { worker: Worker, isL
   const header = <Fragment>
     {worker.node_name}
     {" - "}
-    {worker.name}
-    {" - "}
     {worker.evidence ?
       <Fragment>
-        worker.evidence
+        {worker.evidence}
         {" - "}
         {isRunning(worker.evidence) ?
           <span style={{ color: 'green' }}>running</span>
