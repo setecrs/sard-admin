@@ -3,7 +3,7 @@ import { MockFetcher, Fetcher } from "./fetcher"
 function chooseFetcher() {
     if (process.env.hasOwnProperty('REACT_APP_SARD_ADMIN_URL')) {
         // for integrations tests or development
-        return Fetcher({ baseUrl: process.env.REACT_APP_SARD_ADMIN_URL||'' })
+        return Fetcher({ baseUrl: process.env.REACT_APP_SARD_ADMIN_URL || '' })
     } else {
         return MockFetcher()
     }
@@ -12,9 +12,9 @@ function chooseFetcher() {
 describe('User', () => {
     test('create user', async () => {
         const fetcher = chooseFetcher()
-        expect(await fetcher.listUsers({ auth_token: '' })).toEqual({ users: [] })
-        fetcher.createUser({ user: 'user1', auth_token: '' })
-        expect(await fetcher.listUsers({ auth_token: '' })).toEqual({ users: ['user1'] })
+        fetcher.createUser({ user: 'someuser', auth_token: '' })
+        const { users } = await fetcher.listUsers({ auth_token: '' })
+        expect(users).toContain('someuser')
     })
 
     test('add user to group: /user/{u}/group/{g}', async () => {
@@ -41,7 +41,7 @@ describe('User', () => {
     test('set password: /user/{u}/reset_password', async () => {
         const fetcher = chooseFetcher()
         await fetcher.createUser({ user: 'user1', auth_token: '' })
-        await fetcher.setPassword({ user: 'user1', password: 'pass' , auth_token: ''})
+        await fetcher.setPassword({ user: 'user1', password: 'pass', auth_token: '' })
     })
 
     test('list workers: /workers/', async () => {

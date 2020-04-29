@@ -221,10 +221,10 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
 }
 
 export function MockFetcher(): FetcherReturn {
-    const users: string[] = []
-    const groups: string[] = []
-    const members: { [key: string]: string[] } = {}
-    const subscriptions: { [key: string]: string[] } = {}
+    const users: string[] = ['u1', 'u2']
+    const groups: string[] = ['g1', 'g2', 'g3']
+    const members: { [key: string]: string[] } = {g1: ['u1', 'u2'], g2:['u2']}
+    const subscriptions: { [key: string]: string[] } = {u1: ['g1'], u2: ['g1', 'g2']}
     const jobs: { [key: string]: Job } = {}
     const jobsHistory: Job[] = []
     const workers: Worker[] = [

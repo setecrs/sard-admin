@@ -9,8 +9,8 @@ export function GroupsList({
     selectedGroup:string,
     setSelectedGroup:(x:string)=>void,
 }) {
-    return <ul id='user_list' className="list-group">
-        {groups.map((u, i) => (
+    return <ul id='group_list' className="list-group">
+        {groups.sort().map((u, i) => (
             <li key={i}
                 className={(u === selectedGroup) ? "list-group-item active" : "list-group-item"}
                 onClick={() => setSelectedGroup(u)}>
