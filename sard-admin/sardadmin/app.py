@@ -259,7 +259,7 @@ def _create_app(auth, User, Group):
                         host_ip=w.host_ip,
                         node_name=w.node_name,
                         ready=w.ready,
-                        imag=w.image,
+                        image=w.image,
                     )
                     try:
                         if not w.ready:
