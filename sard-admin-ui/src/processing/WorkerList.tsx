@@ -16,6 +16,7 @@ export function WorkerList({ workers, isLocked, isRunning }: { workers: Worker[]
 
 export function OneWorker({ worker, isLocked, isRunning }: { worker: Worker, isLocked: (x: string | undefined) => boolean, isRunning: (x: string | undefined) => boolean }) {
   const [expanded, setExpanded] = useState(false)
+  const progress = `${Math.round(worker.processed||0)}/${Math.round(worker.found||0)}`
   const header = <Fragment>
     {worker.node_name}
     {" - "}
@@ -30,6 +31,8 @@ export function OneWorker({ worker, isLocked, isRunning }: { worker: Worker, isL
         {isLocked(worker.evidence) ?
           <span style={{ color: 'green' }}> locked</span>
           : <span style={{ color: 'red' }}>not locked</span>}
+        {" - "}
+        {progress}
       </Fragment>
       : 'no evidence'}
 
@@ -45,6 +48,7 @@ export function OneWorker({ worker, isLocked, isRunning }: { worker: Worker, isL
         <div> Pod IP: {worker.pod_ip} </div>
         <div> Ready: {worker.ready.toString()} </div>
         <div> Evidence: {worker.evidence} </div>
+        <div> Progress: {progress} </div>
       </span>
       : <span onClick={() => setExpanded(!expanded)}>
         + {header}

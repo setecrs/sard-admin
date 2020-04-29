@@ -33,6 +33,8 @@ export type Worker = {
     ready: boolean,
     image: string,
     evidence?: string,
+    processed?: number,
+    found?: number,
 }
 
 export type FetcherReturn = {
@@ -118,7 +120,7 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
     }
     return {
         listWorkers: async () => {
-            const j = await helper({baseUrl, suffixUrl: '/workers/'})
+            const j = await helper({ baseUrl, suffixUrl: '/workers/' })
             return j
         },
         listJobs: async ({ auth_token }: { auth_token: string }) => {
@@ -227,22 +229,34 @@ export function MockFetcher(): FetcherReturn {
     const jobsHistory: Job[] = []
     const workers: Worker[] = [
         {
-            host_ip:'1.2.3.4',
+            host_ip: '1.2.3.4',
             pod_ip: '5.6.7.8',
             image: 'asfd/worker:1234',
             name: 'ipedworker-298347',
             node_name: 'sardcloudXX',
             ready: false,
-            evidence: '/ops/A/B/imagem.dd'
+            evidence: '/ops/A/B/imagem.dd',
+            processed: 91084.0,
+            found: 92494.0,
         },
         {
-            host_ip:'1.2.3.5',
+            host_ip: '1.2.3.5',
             pod_ip: '5.6.7.9',
             image: 'asfd/worker:987',
             name: 'ipedworker-oiewur',
             node_name: 'sardcloudYY',
             ready: false,
-            evidence: '/operacoes/ipl_180001/item01-M190005/item01-M190005.dd'
+            evidence: '/operacoes/ipl_180001/item01-M190005/item01-M190005.dd',
+            processed: 1000.0,
+            found: 4000.0,
+        },
+        {
+            host_ip: '1.2.3.6',
+            pod_ip: '5.6.7.10',
+            image: 'asfd/worker:987',
+            name: 'ipedworker-obir',
+            node_name: 'sardcloudZZ',
+            ready: true,
         },
     ]
     return {
