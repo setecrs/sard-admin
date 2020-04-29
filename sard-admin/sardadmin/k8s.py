@@ -24,23 +24,33 @@ class K8s:
         return _listWorkers(resp)
 
 
-def getEvidence(pod_ip, pod_port=80) -> str:
-    resp = requests.get(f"http://{pod_ip}:{pod_port}/metrics")
-    return _getEvidence(resp)
+MetricData = namedtuple('MetricData', ['evidence', 'processed', 'found'])
 
 
 class MetricsException(Exception):
     pass
 
 
-def _getEvidence(resp: requests.Response) -> str:
+def getMetrics(pod_ip, pod_port=80) -> str:
+    resp = requests.get(f"http://{pod_ip}:{pod_port}/metrics")
+    return _getMetrics(resp)
+
+
+def _getMetrics(resp: requests.Response) -> MetricData:
+    evidence = ''
+    processed = 0
+    found = 0
     if (not resp.ok):
         raise MetricsException("Could not get metrics: " + resp.text)
     for family in text_string_to_metric_families(resp.text):
         for sample in family.samples:
             if sample.name == 'ipedworker_runIped_running':
-                return sample.labels['evidence']
-    return ''
+                evidence = sample.labels['evidence']
+            if sample.name == 'ipedworker_runIped_processed':
+                processed = sample.value
+            if sample.name == 'ipedworker_runIped_found':
+                found = sample.value
+    return MetricData(evidence=evidence, processed=processed, found=found)
 
 
 def _listWorkers(resp: client.V1PodList) -> List[IPEDWorker]:

@@ -4,7 +4,7 @@ import array
 import requests
 from kubernetes import client
 
-from .k8s import _listWorkers, IPEDWorker, _getEvidence, MetricsException
+from .k8s import _listWorkers, IPEDWorker, _getMetrics, MetricsException
 
 
 class TestKubernetes(unittest.TestCase):
@@ -42,14 +42,14 @@ class TestKubernetes(unittest.TestCase):
         workers: List[IPEDWorker] = _listWorkers(podList)
         self.assertEqual(len(workers), 0)
 
-    def test_Error_getEvidence(self):
+    def test_Error_getMetrics(self):
         resp = requests.Response()
         resp.status_code = 500
         resp._content = b'testing'
         with self.assertRaises(MetricsException):
-            _getEvidence(resp)
+            _getMetrics(resp)
 
-    def test_getEvidence(self):
+    def test_getMetrics_evidence(self):
         resp = requests.Response()
         resp.status_code = 200
         resp._content = b"""# HELP ipedworker_runIped_calls Number of calls to runIped
@@ -59,5 +59,25 @@ ipedworker_runIped_calls{evidence="/operacoes/operacao_teste/M160006/M160006.dd"
 # TYPE ipedworker_runIped_running gauge
 ipedworker_runIped_running{evidence="/operacoes/operacao_teste/M160006/M160006.dd",hostname="ipedworker-ctlln"} 1
 """
-        evidence = _getEvidence(resp)
-        self.assertEqual(evidence, "/operacoes/operacao_teste/M160006/M160006.dd")
+        mdata = _getMetrics(resp)
+        self.assertEqual(mdata.evidence, "/operacoes/operacao_teste/M160006/M160006.dd")
+
+    def test_getMetrics_progress(self):
+        resp = requests.Response()
+        resp.status_code = 200
+        resp._content = b"""# HELP ipedworker_runIped_calls Number of calls to runIped
+# TYPE ipedworker_runIped_calls counter
+ipedworker_runIped_calls{evidence="/operacoes/2020.0010712/Equipe03/item04_M200234/item04_M200234.dd",hostname="ipedworker-hmcjt"} 1
+# HELP ipedworker_runIped_found Number of items found
+# TYPE ipedworker_runIped_found gauge
+ipedworker_runIped_found{evidence="/operacoes/2020.0010712/Equipe03/item04_M200234/item04_M200234.dd",hostname="ipedworker-hmcjt"} 50903
+# HELP ipedworker_runIped_processed Number of items processed
+# TYPE ipedworker_runIped_processed gauge
+ipedworker_runIped_processed{evidence="/operacoes/2020.0010712/Equipe03/item04_M200234/item04_M200234.dd",hostname="ipedworker-hmcjt"} 49091
+# HELP ipedworker_runIped_running Whether IPED is running or not
+# TYPE ipedworker_runIped_running gauge
+ipedworker_runIped_running{evidence="/operacoes/2020.0010712/Equipe03/item04_M200234/item04_M200234.dd",hostname="ipedworker-hmcjt"} 1
+"""
+        mdata = _getMetrics(resp)
+        self.assertEqual(mdata.processed, 49091)
+        self.assertEqual(mdata.found, 50903)

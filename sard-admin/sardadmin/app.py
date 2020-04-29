@@ -11,7 +11,7 @@ from .user import User
 from .group import Group
 from .auth import Auth
 from .check_request import CheckRequest
-from .k8s import K8s, getEvidence
+from .k8s import K8s, getMetrics
 
 DEBUG = ('DEBUG' in os.environ)
 
@@ -263,7 +263,10 @@ def _create_app(auth, User, Group):
                     )
                     try:
                         if not w.ready:
-                            x['evidence'] = getEvidence(w.pod_ip)
+                            mdata = getMetrics(w.pod_ip)
+                            x['evidence'] = mdata.evidence 
+                            x['processed'] = mdata.processed
+                            x['found'] = mdata.found
                     except:
                         pass
                     result.append(x)
