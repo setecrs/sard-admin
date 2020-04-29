@@ -19,7 +19,7 @@ jobs:
       working-directory: ./${{env.FOLDER}}
 
   bare-unit-tests:
-    if: startsWith(github.ref, 'refs/tags/sard_admin_')
+    if: startsWith(github.ref, 'refs/tags/sard-admin_')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
