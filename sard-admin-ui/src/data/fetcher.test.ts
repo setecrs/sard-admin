@@ -47,7 +47,28 @@ describe('User', () => {
     test('list workers: /workers/', async () => {
         const fetcher = chooseFetcher()
         const workers = await fetcher.listWorkers()
-        expect(workers).toHaveLength(2)
-        expect(workers[0]).toHaveProperty('host_ip')
-        expect(workers[0].host_ip).toEqual('1.2.3.4')
-    })})
+        workers.forEach(w => {
+            expect(w).toHaveProperty('host_ip')
+            expect(w).toHaveProperty('pod_ip')
+            expect(w).toHaveProperty('image')
+            expect(w).toHaveProperty('name')
+            expect(w).toHaveProperty('node_name')
+            expect(w).toHaveProperty('ready')
+            expect(typeof w.host_ip).toBe('string')
+            expect(typeof w.pod_ip).toBe('string')
+            expect(typeof w.image).toBe('string')
+            expect(typeof w.name).toBe('string')
+            expect(typeof w.node_name).toBe('string')
+            expect(typeof w.ready).toBe('boolean')
+            if (w.evidence) {
+                expect(typeof w.evidence).toBe('string')
+            }
+            if (w.processed) {
+                expect(typeof w.processed).toBe('number')
+            }
+            if (w.found) {
+                expect(typeof w.found).toBe('number')
+            }
+        })
+    })
+})
