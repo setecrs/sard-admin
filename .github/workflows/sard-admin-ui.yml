@@ -5,11 +5,11 @@ on: ['push']
 env:
   REPO: setecrs/sard-admin-ui
   FOLDER: sard-admin-ui
-  VERSION: ${GITHUB_REF#refs/tags/}
+  VERSION: ${GITHUB_REF#refs/tags/sard-admin-ui_}
 
 jobs:
   unit-tests:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/sard-admin-ui_')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
