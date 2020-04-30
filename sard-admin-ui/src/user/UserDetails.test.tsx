@@ -2,29 +2,29 @@ import React from 'react'
 import { render, fireEvent, wait } from '@testing-library/react'
 import { UserDetails } from './UserDetails'
 
-describe('list my groups: /user/{u}', () => {
-    test('show list of groups', async () => {
-        const userDetails = <UserDetails
-            addMember={async () => { }}
-            allGroups={['notmine']}
-            fixHome={async () => { }}
-            fixPermissions={async () => { }}
-            listSubscriptions={async () => { }}
-            mygroups={['mine']}
-            user='user'
-            key='myid'
-        />
-        const { getAllByRole } = render(userDetails)
-        await wait(() => {
-            const options = getAllByRole('option')
-            expect(options).toHaveLength(2)
-            expect(options[0].textContent).toBe('')
-            expect(options[1].textContent).toBe('notmine')
-        })
-        const li = getAllByRole('listitem')
-        expect(li).toHaveLength(1)
-        expect(li[0].textContent).toBe('mine')
+test('list my groups: /user/{u}', async () => {
+    const userDetails2 = <UserDetails
+        addMember={async () => { }}
+        allGroups={['notmine']}
+        fixHome={async () => { }}
+        fixPermissions={async () => { }}
+        listSubscriptions={async () => { }}
+        setPassword={async () => { }}
+        mygroups={['mine']}
+        user='user'
+        key='myid'
+    />
+    const { baseElement, getAllByRole } = render(userDetails2)
+    await wait(() => {
+        expect(baseElement).toBeDefined()
     })
+    const options = getAllByRole('option')
+    expect(options).toHaveLength(2)
+    expect(options[0].textContent).toBe('')
+    expect(options[1].textContent).toBe('notmine')
+    const li = getAllByRole('listitem')
+    expect(li).toHaveLength(1)
+    expect(li[0].textContent).toBe('mine')
 })
 
 test('add user to group: /user/{u}/group/{g}', async () => {
@@ -41,6 +41,7 @@ test('add user to group: /user/{u}/group/{g}', async () => {
         fixHome={async () => { }}
         fixPermissions={async () => { }}
         listSubscriptions={async () => { }}
+        setPassword={async () => { }}
         mygroups={['mine']}
         user='user'
         key='myid'
@@ -70,6 +71,7 @@ test('fix home: /user/{u}/home', async () => {
         }}
         fixPermissions={async () => { }}
         listSubscriptions={async () => { }}
+        setPassword={async () => { }}
         mygroups={['mine']}
         user='user'
         key='myid'
@@ -94,6 +96,7 @@ test('permissions: /user/{u}/permissions', async () => {
             called++
         }}
         listSubscriptions={async () => { }}
+        setPassword={async () => { }}
         mygroups={['mine']}
         user='user'
         key='myid'
@@ -105,19 +108,93 @@ test('permissions: /user/{u}/permissions', async () => {
         expect(called_user).toBe('user')
     })
 })
-test.skip('set password: /user/{u}/reset_password', async () => {
+describe('set password: /user/{u}/reset_password', () => {
+    let _user = ''
+    let _password = ''
+    let called = 0
+    const spyPassword = async ({ user, password }: { user: string, password: string }) => {
+        _user = user
+        _password = password
+        called++
+    }
     const userDetails = <UserDetails
         addMember={async () => { }}
-        allGroups={['notmine']}
+        allGroups={[]}
         fixHome={async () => { }}
         fixPermissions={async () => { }}
         listSubscriptions={async () => { }}
-        mygroups={['mine']}
+        mygroups={[]}
         user='user'
         key='myid'
+        setPassword={spyPassword}
     />
-    const { getByRole } = render(userDetails)
-    await wait(() => {
-        expect(getByRole('button', { name: /change password/i })).toBeDefined()
+    test('it renders', async () => {
+        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        await wait(() => {
+            expect(baseElement).toBeDefined()
+        })    
+        const field1 = getByPlaceholderText('Password')
+        const field2 = getByPlaceholderText(/retype password/i)
+        const btn = getByRole('button', { name: /set password/i })
+        expect(field1).toBeDefined()
+        expect(field2).toBeDefined()
+        expect(btn).toBeDefined()
+        expect(_user).toBe('')
+        expect(_password).toBe('')
+    })
+    test('fill field1, nothing changes', async () => {
+        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        await wait(() => {
+            expect(baseElement).toBeDefined()
+        })    
+        const field1 = getByPlaceholderText('Password')
+        const field2 = getByPlaceholderText(/retype password/i)
+        fireEvent.change(field1, { target: { value: 1234 } })
+        fireEvent.change(field2, { target: { value: '' } })
+        expect(_user).toBe('')
+        expect(_password).toBe('')
+    })
+    test('fill field2, nothing changes', async () => {
+        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        await wait(() => {
+            expect(baseElement).toBeDefined()
+        })    
+        const field1 = getByPlaceholderText('Password')
+        const field2 = getByPlaceholderText(/retype password/i)
+        fireEvent.change(field1, { target: { value: '' } })
+        fireEvent.change(field2, { target: { value: 1234 } })
+        expect(_user).toBe('')
+        expect(_password).toBe('')
+    })
+    test('press button, nothing changes', async () => {
+        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        await wait(() => {
+            expect(baseElement).toBeDefined()
+        })    
+        const field1 = getByPlaceholderText('Password')
+        const field2 = getByPlaceholderText(/retype password/i)
+        const btn = getByRole('button', { name: /set password/i })
+        fireEvent.change(field1, { target: { value: '' } })
+        fireEvent.change(field2, { target: { value: '' } })
+        fireEvent.click(btn)
+        expect(_user).toBe('')
+        expect(_password).toBe('')
+    })
+    test('press button, set password', async () => {
+        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        await wait(() => {
+            expect(baseElement).toBeDefined()
+        })    
+        const field1 = getByPlaceholderText('Password')
+        const field2 = getByPlaceholderText(/retype password/i)
+        const btn = getByRole('button', { name: /set password/i })
+        fireEvent.change(field1, { target: { value: 1234 } })
+        fireEvent.change(field2, { target: { value: 1234 } })
+        fireEvent.click(btn)
+        expect(called).toBe(1)
+        await wait(() => {
+            expect(_password).toBe('1234')
+            expect(_user).toBe('user')
+        })
     })
 })

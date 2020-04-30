@@ -2,6 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { SelectList } from '../elements/SelectList'
+import { UserPassword } from './UserPassword'
 
 export function UserDetails({
     user,
@@ -11,6 +12,7 @@ export function UserDetails({
     fixPermissions,
     addMember,
     listSubscriptions,
+    setPassword,
 }: {
     user: string,
     mygroups: string[],
@@ -19,6 +21,7 @@ export function UserDetails({
     fixPermissions: ({ user }: { user: string }) => Promise<void>,
     addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
     listSubscriptions: ({ user }: { user: string }) => Promise<void>,
+    setPassword: ({ user, password }: { user: string, password: string }) => Promise<void>,
 }) {
     const [selectedGroup, setSelectedGroup] = useState('')
     const [refreshing, setRefreshing] = useState(false)
@@ -43,34 +46,44 @@ export function UserDetails({
                 <li key={i}>{g}</li>
             )}
         </ul>
-        <div>
-            <SelectList
-                id='selectMyGroup'
-                elements={allGroups}
-                selectedValue={selectedGroup}
-                setSelectedValue={setSelectedGroup}
-            />
-            <button
-                onClick={async () => {
-                    setRefreshing(true)
-                    await addMember({ group: selectedGroup, user })
-                    setRefreshing(false)
-                }}
-            >Add group</button>
+        <div className="row p-3">
+            <div>
+                <SelectList
+                    id='selectMyGroup'
+                    elements={allGroups}
+                    selectedValue={selectedGroup}
+                    setSelectedValue={setSelectedGroup}
+                />
+            </div>
+            <div>
+                <button
+                    className="button btn btn-primary"
+                    onClick={async () => {
+                        setRefreshing(true)
+                        await addMember({ group: selectedGroup, user })
+                        setRefreshing(false)
+                    }}
+                >Add group</button>
+            </div>
         </div>
-        <div>
+        <div className="row p-3">
             <button
+                className="button btn btn-primary"
                 onClick={() => fixHome({ user })}
             >
                 Fill home directory
             </button>
         </div>
-        <div>
+        <div className="row p-3">
             <button
+                className="button btn btn-primary"
                 onClick={() => fixPermissions({ user })}
             >
                 Fix home directory permissions
             </button>
+        </div>
+        <div className="row p-3">
+            <UserPassword user={user} setPassword={setPassword} />
         </div>
     </Fragment>
 }

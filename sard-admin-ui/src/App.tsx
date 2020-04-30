@@ -53,6 +53,8 @@ function App({ fetcher, cardFetcher, lockFetcher }: { fetcher: FetcherReturn, ca
       actions.addMember({ user, group, auth_token: state.auth_token })}
     listSubscriptions={async ({ user }: { user: string }) =>
       actions.listSubscriptions({ user, auth_token: state.auth_token })}
+    setPassword={async ({ user, password }: { user: string, password: string }) =>
+      actions.setPassword({ user, password, auth_token: state.auth_token })}
   />
 
   const groupPage = <GroupPage

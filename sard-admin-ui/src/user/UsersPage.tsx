@@ -16,6 +16,7 @@ export function UsersPage({
     fixPermissions,
     addMember,
     listSubscriptions,
+    setPassword,
 }: {
     users: string[],
     allGroups: string[],
@@ -27,6 +28,7 @@ export function UsersPage({
     fixPermissions: ({ user }: { user: string }) => Promise<void>,
     addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
     listSubscriptions: ({ user }: { user: string }) => Promise<void>,
+    setPassword: ({user, password}: {user: string, password: string}) => Promise<void>,
 }) {
     const elemCreate = <CreateName
         id='createUser'
@@ -46,6 +48,7 @@ export function UsersPage({
         fixPermissions={fixPermissions}
         addMember={addMember}
         listSubscriptions={listSubscriptions}
+        setPassword={setPassword}
     />
 
     return <GenericPage

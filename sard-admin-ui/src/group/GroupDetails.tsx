@@ -9,13 +9,13 @@ export function GroupDetails({
     addMember,
     listMembers,
     fixPermissions,
-}:{
-    group:string,
+}: {
+    group: string,
     myUsers: string[],
     allUsers: string[],
-    addMember:({user, group}:{user:string,group:string})=>Promise<void>,
-    listMembers:({group}:{group:string})=>Promise<void>,
-    fixPermissions:({group}:{group:string})=>Promise<void>,
+    addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
+    listMembers: ({ group }: { group: string }) => Promise<void>,
+    fixPermissions: ({ group }: { group: string }) => Promise<void>,
 }) {
     const [selectedUser, setSelectedUser] = useState('')
     const [refreshing, setRefreshing] = useState(false)
@@ -28,7 +28,7 @@ export function GroupDetails({
         })()
     }, [group])
 
-    if (!group){
+    if (!group) {
         return <Fragment></Fragment>
     }
 
@@ -40,27 +40,31 @@ export function GroupDetails({
                 <li key={i}>{g}</li>
             )}
         </ul>
-        <div>
-            <SelectList
-                id='selectMyUser'
-                elements={allUsers}
-                selectedValue={selectedUser}
-                setSelectedValue={setSelectedUser}
-            />
-            <button
-                onClick={async () => {
-                    setRefreshing(true)
-                    await addMember({ user: selectedUser, group })
-                    setRefreshing(false)
-                }}
-            >Add user</button>
+        <div className="row p-3">
+            <div>
+                <SelectList
+                    id='selectMyUser'
+                    elements={allUsers}
+                    selectedValue={selectedUser}
+                    setSelectedValue={setSelectedUser}
+                />
+            </div>
+            <div>
+                <button
+                    className="button btn btn-primary"
+                    onClick={async () => {
+                        setRefreshing(true)
+                        await addMember({ user: selectedUser, group })
+                        setRefreshing(false)
+                    }}
+                >Add user</button>
+            </div>
         </div>
-        <div>
+        <div className="row p-3">
             <button
-                onClick={() => fixPermissions({group})}
-            >
-                Fix group directory permissions
-            </button>
+                className="button btn btn-primary"
+                onClick={() => fixPermissions({ group })}
+            >Fix group directory permissions</button>
         </div>
     </Fragment>
 }
