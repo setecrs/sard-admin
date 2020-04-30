@@ -132,7 +132,7 @@ describe('set password: /user/{u}/reset_password', () => {
         const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
         await wait(() => {
             expect(baseElement).toBeDefined()
-        })    
+        })
         const field1 = getByPlaceholderText('Password')
         const field2 = getByPlaceholderText(/retype password/i)
         const btn = getByRole('button', { name: /set password/i })
@@ -143,10 +143,10 @@ describe('set password: /user/{u}/reset_password', () => {
         expect(_password).toBe('')
     })
     test('fill field1, nothing changes', async () => {
-        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        const { baseElement, getByPlaceholderText } = render(userDetails)
         await wait(() => {
             expect(baseElement).toBeDefined()
-        })    
+        })
         const field1 = getByPlaceholderText('Password')
         const field2 = getByPlaceholderText(/retype password/i)
         fireEvent.change(field1, { target: { value: 1234 } })
@@ -155,10 +155,10 @@ describe('set password: /user/{u}/reset_password', () => {
         expect(_password).toBe('')
     })
     test('fill field2, nothing changes', async () => {
-        const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
+        const { baseElement, getByPlaceholderText } = render(userDetails)
         await wait(() => {
             expect(baseElement).toBeDefined()
-        })    
+        })
         const field1 = getByPlaceholderText('Password')
         const field2 = getByPlaceholderText(/retype password/i)
         fireEvent.change(field1, { target: { value: '' } })
@@ -170,7 +170,7 @@ describe('set password: /user/{u}/reset_password', () => {
         const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
         await wait(() => {
             expect(baseElement).toBeDefined()
-        })    
+        })
         const field1 = getByPlaceholderText('Password')
         const field2 = getByPlaceholderText(/retype password/i)
         const btn = getByRole('button', { name: /set password/i })
@@ -184,7 +184,7 @@ describe('set password: /user/{u}/reset_password', () => {
         const { baseElement, getByRole, getByPlaceholderText } = render(userDetails)
         await wait(() => {
             expect(baseElement).toBeDefined()
-        })    
+        })
         const field1 = getByPlaceholderText('Password')
         const field2 = getByPlaceholderText(/retype password/i)
         const btn = getByRole('button', { name: /set password/i })

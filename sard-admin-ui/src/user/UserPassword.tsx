@@ -31,7 +31,7 @@ export function UserPassword({
     <div>
       <button
         className={btnClass}
-        disabled={!(password && password == password2 && btnClass == defaultBtnClass)}
+        disabled={!(password && password === password2 && btnClass === defaultBtnClass)}
         onClick={async () => {
           try {
             setBtnclass("button btn btn-secondary")

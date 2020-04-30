@@ -41,21 +41,21 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
         if (!x) {
             return false
         }
-        return running.filter(y => y.properties.path == x).length > 0
+        return running.filter(y => y.properties.path === x).length > 0
     }
 
     function inWorker(x: string | undefined) {
         if (!x) {
             return false
         }
-        return workers.filter(w => w.evidence == x).length > 0
+        return workers.filter(w => w.evidence === x).length > 0
     }
 
     useEffect(() => {
-        setFailed(cards.filter(x => x.properties.status == 'failed'))
+        setFailed(cards.filter(x => x.properties.status === 'failed'))
         setTodo(cards.filter(x => [null, undefined, '', 'todo'].includes(x.properties.status)))
-        setDone(cards.filter(x => x.properties.status == 'done'))
-        setRunning(cards.filter(x => x.properties.status == 'running'))
+        setDone(cards.filter(x => x.properties.status === 'done'))
+        setRunning(cards.filter(x => x.properties.status === 'running'))
     }, [cards])
 
     useEffect(() => {

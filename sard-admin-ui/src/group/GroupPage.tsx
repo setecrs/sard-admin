@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import { CreateName } from '../elements/CreateName';
 import { GenericPage } from '../elements/GenericPage';
