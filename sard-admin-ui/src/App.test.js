@@ -18,6 +18,3 @@ test('#navbar has Users and Groups', async () => {
 });
 
 test.todo('has list of running permissions')
-
-test.todo('has login button')
-test.todo('has logout button')
