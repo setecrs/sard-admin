@@ -83,6 +83,8 @@ export type FetcherReturn = {
         }>,
     logout: ({ auth_token }: { auth_token: string }) =>
         Promise<void>,
+    folders_count: ({ auth_token, imagepath }: { auth_token: string, imagepath: string }) => Promise<number>,
+    folders_rename: ({ auth_token, imagepath }: { auth_token: string, imagepath: string }) => Promise<boolean>,
 }
 
 export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
@@ -217,14 +219,30 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
                 }
             })
         },
+        folders_count: async ({ auth_token, imagepath }) => {
+            const j = await helper({
+                baseUrl, auth_token, suffixUrl: `/folders/count/${imagepath}`, options: {
+                    method: 'GET',
+                }
+            })
+            return j.result
+        },
+        folders_rename: async ({ auth_token, imagepath }) => {
+            const j = await helper({
+                baseUrl, auth_token, suffixUrl: `/folders/rename/${imagepath}`, options: {
+                    method: 'POST',
+                }
+            })
+            return j.result
+        }
     }
 }
 
 export function MockFetcher(): FetcherReturn {
     const users: string[] = ['u1', 'u2']
     const groups: string[] = ['g1', 'g2', 'g3']
-    const members: { [key: string]: string[] } = {g1: ['u1', 'u2'], g2:['u2']}
-    const subscriptions: { [key: string]: string[] } = {u1: ['g1'], u2: ['g1', 'g2']}
+    const members: { [key: string]: string[] } = { g1: ['u1', 'u2'], g2: ['u2'] }
+    const subscriptions: { [key: string]: string[] } = { u1: ['g1'], u2: ['g1', 'g2'] }
     const jobs: { [key: string]: Job } = {}
     const jobsHistory: Job[] = []
     const workers: Worker[] = [
@@ -300,6 +318,8 @@ export function MockFetcher(): FetcherReturn {
             auth_token: user,
         }),
         logout: async () => { },
+        folders_count: async () => 0,
+        folders_rename: async () => true,
     }
 }
 
