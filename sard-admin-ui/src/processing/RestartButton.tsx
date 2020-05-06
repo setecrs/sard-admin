@@ -11,22 +11,22 @@ export function RestartButton({
   folders_rename: ({ imagepath }: { imagepath: string }) => Promise<boolean>,
 }) {
   const [countTxt, setCountTxt] = useState('')
-  const [className, setClassName] = useState('button btn btn-primary')
+  const [className, setClassName] = useState('button btn btn-sm btn-outline-primary')
 
   const onClick = async () => {
     try {
-      setClassName('button btn btn-secondary')
+      setClassName('button btn btn-sm btn-outline-secondary')
       const result = await folders_rename({ imagepath })
       if (!result) {
-        setClassName('button btn btn-danger disabled')
+        setClassName('button btn btn-sm btn-outline-danger disabled')
       } else {
-        setClassName('button btn btn-success disabled')
+        setClassName('button btn btn-sm btn-outline-success disabled')
       }
     } catch (e) {
-      setClassName('button btn btn-danger disabled')
+      setClassName('button btn btn-sm btn-outline-danger disabled')
     } finally {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      setClassName('button btn btn-primary')
+      setClassName('button btn btn-sm btn-outline-primary')
       await updateCounter()
     }
   }
