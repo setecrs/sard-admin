@@ -83,8 +83,8 @@ export type FetcherReturn = {
         }>,
     logout: ({ auth_token }: { auth_token: string }) =>
         Promise<void>,
-    folders_count: ({ auth_token, imagepath }: { auth_token: string, imagepath: string }) => Promise<number>,
-    folders_rename: ({ auth_token, imagepath }: { auth_token: string, imagepath: string }) => Promise<boolean>,
+    folders_count: ({ imagepath }: { imagepath: string }) => Promise<number>,
+    folders_rename: ({ imagepath }: { imagepath: string }) => Promise<boolean>,
 }
 
 export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
@@ -219,17 +219,17 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
                 }
             })
         },
-        folders_count: async ({ auth_token, imagepath }) => {
+        folders_count: async ({ imagepath }) => {
             const j = await helper({
-                baseUrl, auth_token, suffixUrl: `/folders/count/${imagepath}`, options: {
+                baseUrl, auth_token: undefined, suffixUrl: `/folders/count/${imagepath}`, options: {
                     method: 'GET',
                 }
             })
             return j.result
         },
-        folders_rename: async ({ auth_token, imagepath }) => {
+        folders_rename: async ({ imagepath }) => {
             const j = await helper({
-                baseUrl, auth_token, suffixUrl: `/folders/rename/${imagepath}`, options: {
+                baseUrl, auth_token: undefined, suffixUrl: `/folders/rename/${imagepath}`, options: {
                     method: 'POST',
                 }
             })
@@ -277,6 +277,7 @@ export function MockFetcher(): FetcherReturn {
             ready: true,
         },
     ]
+    let restart_counter = 0
     return {
         listWorkers: async () => workers,
         listJobs: async () => jobs,
@@ -318,8 +319,11 @@ export function MockFetcher(): FetcherReturn {
             auth_token: user,
         }),
         logout: async () => { },
-        folders_count: async () => 0,
-        folders_rename: async () => true,
+        folders_count: async () => restart_counter,
+        folders_rename: async () => {
+            restart_counter++
+            return restart_counter % 2 == 0
+        }
     }
 }
 

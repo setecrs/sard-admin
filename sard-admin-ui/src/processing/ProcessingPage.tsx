@@ -3,6 +3,7 @@ import { CardFetcherType, ProcessingCard } from '../data/card_fetcher'
 import { LockFetcherType } from '../data/lock_fetcher'
 import { FetcherReturn, Worker } from '../data/fetcher'
 import { WorkerList } from './WorkerList'
+import { RestartButton } from './RestartButton'
 
 export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher: FetcherReturn, card_fetcher: CardFetcherType, lockFetcher: LockFetcherType }) {
     const [locks, setLocks] = useState<string[]>([])
@@ -127,6 +128,14 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
             {failed.map(x => (
                 <li key={x.id}>
                     {x.id} - {x.properties.path}
+                    {
+                        (x.properties.path) ? <RestartButton
+                            imagepath={x.properties.path || ''}
+                            folders_count={fetcher.folders_count}
+                            folders_rename={fetcher.folders_rename}
+                        />
+                            : ''
+                    }
                 </li>
             ))}
         </ul>
