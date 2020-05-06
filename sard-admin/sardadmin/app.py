@@ -12,6 +12,7 @@ from .group import Group
 from .auth import Auth
 from .check_request import CheckRequest
 from .k8s import K8s, getMetrics
+from .folders import count_sard_folders, rename_sard_folder
 
 DEBUG = ('DEBUG' in os.environ)
 
@@ -273,4 +274,31 @@ def _create_app(auth, User, Group):
                 return result
             except:
                 return ('', http.HTTPStatus.BAD_REQUEST)
+
+    @api.route('/folders/count/<string:imagepath>')
+    class FoldersCount(Resource):
+        def get(self, imagepath):
+            """Count number of SARD and SARD.old dirs in imagepath folder"""
+            try:
+                return {
+                    'result': count_sard_folders(imagepath)
+                }
+            except Exception as e:
+                if DEBUG:
+                    log.exception(e)
+                raise BadRequest(dict(error=str(e)))
+
+    @api.route('/folders/rename/<string:imagepath>')
+    class FoldersRename(Resource):
+        def post(self, imagepath):
+            """Rename folder SARD to SARD.old[x]"""
+            try:
+                return {
+                    'result': rename_sard_folder(imagepath)
+                }
+            except Exception as e:
+                if DEBUG:
+                    log.exception(e)
+                raise BadRequest(dict(error=str(e)))
+
     return app
