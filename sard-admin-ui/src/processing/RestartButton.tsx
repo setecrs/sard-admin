@@ -15,7 +15,7 @@ export function RestartButton({
 
   const onClick = async () => {
     try {
-      setClassName('button btn btn-sm btn-outline-secondary')
+      setClassName('button btn btn-sm btn-outline-secondary disabled')
       const result = await folders_rename({ imagepath })
       if (!result) {
         setClassName('button btn btn-sm btn-outline-danger disabled')
@@ -44,5 +44,5 @@ export function RestartButton({
     className={className}
     disabled={(className.endsWith('disabled'))}
     onClick={onClick}
-  >Restart{countTxt}</button>
+  >Move SARD/ to SARD.old/{countTxt}</button>
 }
