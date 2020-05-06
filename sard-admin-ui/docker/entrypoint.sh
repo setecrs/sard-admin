@@ -21,6 +21,10 @@ server {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/jobs/ ;
   }
 
+  location /folders/ {
+    proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/folders/ ;
+  }
+
   location /workers/ {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/workers/ ;
   }
