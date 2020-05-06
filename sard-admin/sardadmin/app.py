@@ -280,7 +280,7 @@ def _create_app(auth, User, Group):
         @api.expect(api.model('data', dict(
             imagepath=fields.String(required=True, description='imagepath'),
         )))
-        def post(self, imagepath):
+        def post(self):
             """Count number of SARD and SARD.old dirs in imagepath folder"""
             try:
                 imagepath = api.payload['imagepath']
@@ -297,7 +297,7 @@ def _create_app(auth, User, Group):
         @api.expect(api.model('data', dict(
             imagepath=fields.String(required=True, description='imagepath'),
         )))
-        def post(self, imagepath):
+        def post(self):
             """Rename folder SARD to SARD.old[x]"""
             try:
                 imagepath = api.payload['imagepath']
