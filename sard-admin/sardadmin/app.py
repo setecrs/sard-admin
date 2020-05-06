@@ -275,11 +275,15 @@ def _create_app(auth, User, Group):
             except:
                 return ('', http.HTTPStatus.BAD_REQUEST)
 
-    @api.route('/folders/count/<string:imagepath>')
+    @api.route('/folders/count')
     class FoldersCount(Resource):
-        def get(self, imagepath):
+        @api.expect(api.model('data', dict(
+            imagepath=fields.String(required=True, description='imagepath'),
+        )))
+        def post(self, imagepath):
             """Count number of SARD and SARD.old dirs in imagepath folder"""
             try:
+                imagepath = api.payload['imagepath']
                 return {
                     'result': count_sard_folders(imagepath)
                 }
@@ -288,11 +292,15 @@ def _create_app(auth, User, Group):
                     log.exception(e)
                 raise BadRequest(dict(error=str(e)))
 
-    @api.route('/folders/rename/<string:imagepath>')
+    @api.route('/folders/rename')
     class FoldersRename(Resource):
+        @api.expect(api.model('data', dict(
+            imagepath=fields.String(required=True, description='imagepath'),
+        )))
         def post(self, imagepath):
             """Rename folder SARD to SARD.old[x]"""
             try:
+                imagepath = api.payload['imagepath']
                 return {
                     'result': rename_sard_folder(imagepath)
                 }
