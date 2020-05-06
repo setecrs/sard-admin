@@ -15,6 +15,7 @@ setup(
         "ldap3",
         "kubernetes",
         "prometheus_client",
+        "pyfakefs",
         "PyJWT"
     ],
 )
