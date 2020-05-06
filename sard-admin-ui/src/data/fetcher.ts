@@ -221,16 +221,20 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
         },
         folders_count: async ({ imagepath }) => {
             const j = await helper({
-                baseUrl, auth_token: undefined, suffixUrl: `/folders/count/${imagepath}`, options: {
-                    method: 'GET',
+                baseUrl, auth_token: undefined, suffixUrl: `/folders/count`, options: {
+                    method: 'POST',
+                    headers: new Headers({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ imagepath }),
                 }
             })
             return j.result
         },
         folders_rename: async ({ imagepath }) => {
             const j = await helper({
-                baseUrl, auth_token: undefined, suffixUrl: `/folders/rename/${imagepath}`, options: {
+                baseUrl, auth_token: undefined, suffixUrl: `/folders/rename`, options: {
                     method: 'POST',
+                    headers: new Headers({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ imagepath }),
                 }
             })
             return j.result
