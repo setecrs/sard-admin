@@ -203,12 +203,16 @@ def _create_app(auth, User, Group):
         def post(self, login):
             """Altera a senha do usuario. Se a senha for "", uma senha aleatoria sera criada."""
             try:
+                password = api.payload['password']
+            except:
+                raise BadRequest('must send password')
+            try:
                 check_request.check_user(login, request)
             except:
                 return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
             try:
                 return {
-                    "password": User(login).resetPassword(api.payload['password'])
+                    "password": User(login).resetPassword(password)
                 }
             except Exception as e:
                 if DEBUG:
