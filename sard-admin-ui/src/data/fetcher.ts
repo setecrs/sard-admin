@@ -93,8 +93,8 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
             options = options || {}
             if (!options.headers) {
                 options.headers = new Headers()
-                options.headers.set('Authorization', `Bearer ${auth_token}`)
             }
+            options.headers.set('Authorization', `Bearer ${auth_token}`)
         }
         const URL = baseUrl + suffixUrl
         const req = new Request(URL)
