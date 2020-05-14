@@ -196,9 +196,7 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
             await helperNoJson({
                 baseUrl, auth_token, suffixUrl: `/user/${user}/reset_password`, options: {
                     method: 'POST',
-                    json: {
-                        password,
-                    },
+                    body: JSON.stringify({ password, }),
                 }
             })
         },
