@@ -2,8 +2,12 @@ import { getLocksCore } from './lock_fetcher'
 
 describe('locker', () => {
     it('returns [] with empty response', async () => {
+        const got = await getLocksCore(new Response(''))
+        expect(JSON.stringify(got)).toEqual("[]")
+    })
+    it('returns [] with almost empty response', async () => {
         const got = await getLocksCore(new Response(' \n    '))
-        expect(got).toHaveLength(0)
+        expect(JSON.stringify(got)).toEqual("[]")
     })
     it('returns results', async () => {
         const got = await getLocksCore(new Response(' leading space \nokresult  extra  '))
