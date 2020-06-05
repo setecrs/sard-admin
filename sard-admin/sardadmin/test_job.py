@@ -50,7 +50,7 @@ class TestJob(unittest.TestCase):
         op = "A"
         history = []
         def func():
-            cmd = ['echo', "job_test.py"]
+            cmd = ['sleep', "0.1"]
             proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
             yield proc.stdout
         tA1, tA2 = addJob(jobs, op, history, func, timeout=1)

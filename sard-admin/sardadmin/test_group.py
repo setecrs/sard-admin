@@ -62,7 +62,7 @@ class GroupTest(unittest.TestCase):
         Group.history[-1]['thread'].join()
         self.assertEqual(os.path.exists('/operacoes/folder'), True)
         stat = os.stat('/operacoes/folder')
-        self.assertEqual(stat.st_mode, 0o40550)
+        self.assertEqual(stat.st_mode, 0o40070)
 
     def test_users(self):
         Group('users', history_timeout=0.1).create()
