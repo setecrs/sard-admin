@@ -125,6 +125,6 @@ class GroupTest(unittest.TestCase):
         ]:
             self.assertEqual(os.stat(d).st_gid, gid, d)
             self.assertEqual(os.stat(d).st_uid, uid, d)
-            self.assertEqual(os.stat(d).st_mode, 0o40550, d)
+            self.assertEqual(os.stat(d).st_mode, 0o40070, d)
         for f in files2:
             self.assertEqual(os.stat(f).st_mode, 0o100555, f)
