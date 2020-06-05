@@ -75,7 +75,7 @@ class Group:
             myroot = os.path.join(group_root, self.name)
             #The main group folder is only accessible by group members.
             os.chown(myroot, 0, gid, follow_symlinks=False)
-            os.chmod(myroot, 0o550)
+            os.chmod(myroot, 0o070)
             for dirpath, dirnames, filenames in os.walk(myroot):
                 for x in dirnames:
                     #Inner folders are always readable and executable.
