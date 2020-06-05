@@ -38,8 +38,13 @@ def _create_app(auth, User, Group):
     class Jobs(Resource):
         def get(self):
             return {
-                "history": [dict((k, h[k]) for k in h if k != 'thread') for h in Group.history],
-                "jobs": dict([(op, dict((k, Group.jobs[op][k]) for k in Group.jobs[op] if k != 'thread')) for op in Group.jobs]),
+                "jobs": [op for op in Group.jobs],
+            }
+    @api.route('/jobs/<string:job>')
+    class GetJob(Resource):
+        def get(self, job):
+            return {
+                "history": [dict((k, h[k]) for k in h if k != 'thread') for h in Group.history if h.name == job]
             }
 
     @api.route('/group/')
