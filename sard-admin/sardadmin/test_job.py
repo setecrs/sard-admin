@@ -2,7 +2,7 @@ import unittest
 import time
 from subprocess import run, PIPE, STDOUT
 
-from .job import addJob
+from .job import addJob, listHistoryByName
 
 class TestJob(unittest.TestCase):
     def test_echo(self):
@@ -68,4 +68,21 @@ class TestJob(unittest.TestCase):
         self.assertEqual(len(history),1)
         tA2.join()
         self.assertEqual(len(history),0)
+
+    def test_listHistoryByName(self):
+        jobs = {}
+        op = "A"
+        history = []
+        def func():
+            cmd = ['echo']
+            proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
+            yield proc.stdout
+        tA1, tA2 = addJob(jobs, op, history, func, timeout=1)
+        tA1.join()
+        got = listHistoryByName(history, 'A')
+        self.assertEqual(len(got),1)
+        self.assertEqual(got[0]['name'],'A')
+        got = listHistoryByName(history, 'B')
+        self.assertEqual(got,[])
+
 

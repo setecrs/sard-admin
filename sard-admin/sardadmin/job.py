@@ -6,6 +6,11 @@ class AlreadyRunningException(Exception):
     "Job already running"
     pass
 
+def listHistoryByName(history, name):
+    byName = [h for h in history if h['name'] == name]
+    serializable = [dict((k, h[k]) for k in h if k != 'thread') for h in byName]
+    return serializable
+
 def addJob(jobs, op, history, func, timeout):
     if op in jobs:
         raise AlreadyRunningException(f'op already in job list: {op}')

@@ -13,6 +13,7 @@ from .auth import Auth
 from .check_request import CheckRequest
 from .k8s import K8s, getMetrics
 from .folders import count_sard_folders, rename_sard_folder
+from .job import listHistoryByName
 
 DEBUG = ('DEBUG' in os.environ)
 
@@ -44,7 +45,7 @@ def _create_app(auth, User, Group):
     class GetJob(Resource):
         def get(self, job):
             return {
-                "history": [dict((k, h[k]) for k in h if k != 'thread') for h in Group.history if h.name == job]
+                "history": listHistoryByName(Group.history, job)
             }
 
     @api.route('/group/')
