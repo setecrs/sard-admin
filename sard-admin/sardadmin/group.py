@@ -87,7 +87,7 @@ class Group:
                     newmode = newmode | 0o111 # everybody can execute
                     if oldmode != newmode:
                         os.chmod(xpath, newmode)
-                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
+                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
                 for x in filenames:
                     #Inner files are always readable. Some are executable too.
                     xpath = os.path.join(dirpath, x)
@@ -102,5 +102,5 @@ class Group:
                         newmode = newmode | 0o111 # everybody can execute
                     if oldmode != newmode:
                         os.chmod(xpath, newmode)
-                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}'
+                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
         addJob(Group.jobs, self.name, Group.history, f, self.history_timeout)

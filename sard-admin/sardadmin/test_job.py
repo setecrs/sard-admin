@@ -10,7 +10,7 @@ class TestJob(unittest.TestCase):
         op = "A"
         history = []
         def func():
-            cmd = ['echo', "job_test.py"]
+            cmd = ['seq', '3']
             proc = run(cmd, stdout=PIPE, stderr=STDOUT, check=True, encoding='utf-8')
             yield proc.stdout
         t1, t2 = addJob(jobs, op, history, func, timeout=1)
@@ -18,7 +18,7 @@ class TestJob(unittest.TestCase):
         time.sleep(0.1) # wait for t2 to del jobs[op]
         self.assertEqual(len(jobs),0)
         self.assertEqual(len(history),1)
-        self.assertEqual(history[0]['output'], "job_test.py\n\n")
+        self.assertEqual(history[0]['output'], "1\n2\n3\n")
         self.assertEqual(history[0]['running'], False)
         dur = history[0]['end'] - history[0]['start']
         self.assertGreater(dur, 0)

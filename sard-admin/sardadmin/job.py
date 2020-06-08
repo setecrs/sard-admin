@@ -25,7 +25,7 @@ def addJob(jobs, op, history, func, timeout):
         result = func()
         if isinstance(result, types.GeneratorType):
             for x in result:
-                jobs[op]['output'] +=x + '\n'
+                jobs[op]['output'] +=x
     t1 = Thread(target=th)
     t1.start()
     jobs[op]['thread']=t1
