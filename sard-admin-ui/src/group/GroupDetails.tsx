@@ -108,10 +108,6 @@ export function GroupDetails({
 
 function toDate(d: Date) {
     try {
-        return JSON.stringify(new Date(d))
-    } catch (error) {
-    }
-    try {
         return JSON.stringify(new Date(Number(d) * 1000))
     } catch (error) {
     }
