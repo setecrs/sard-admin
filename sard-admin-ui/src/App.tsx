@@ -71,6 +71,8 @@ function App({ fetcher, cardFetcher, lockFetcher }: { fetcher: FetcherReturn, ca
       actions.listMembers({ group, auth_token: state.auth_token })}
     createGroup={async ({ group }: { group: string }) =>
       actions.createGroup({ group, auth_token: state.auth_token })}
+    listJobHistory={async ({ group }: { group: string }) =>
+      fetcher.listJobHistory({ group, auth_token: state.auth_token })}
   />
 
   const loginPage = <LoginPage

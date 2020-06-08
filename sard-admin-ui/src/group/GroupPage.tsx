@@ -4,6 +4,7 @@ import { CreateName } from '../elements/CreateName';
 import { GenericPage } from '../elements/GenericPage';
 import { GroupDetails } from './GroupDetails'
 import { GroupsList } from './GroupsList'
+import { Job } from '../data/fetcher'
 
 export function GroupPage({
     groups,
@@ -15,6 +16,7 @@ export function GroupPage({
     addMember,
     listMembers,
     fixPermissions,
+    listJobHistory,
 }: {
     groups: string[],
     allUsers: string[],
@@ -25,6 +27,7 @@ export function GroupPage({
     addMember: ({ user, group }: { user: string, group: string }) => Promise<void>,
     listMembers: ({ group }: { group: string }) => Promise<void>,
     fixPermissions: ({ group }: { group: string }) => Promise<void>,
+    listJobHistory: ({group}:{group:string}) => Promise<Job[]>,
 }) {
     const elemCreate = <CreateName
         id='createGroup'
@@ -43,6 +46,7 @@ export function GroupPage({
         fixPermissions={fixPermissions}
         addMember={addMember}
         listMembers={listMembers}
+        listJobHistory={listJobHistory}
     />
 
     return <GenericPage

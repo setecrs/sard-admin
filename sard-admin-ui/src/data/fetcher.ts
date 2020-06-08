@@ -17,7 +17,7 @@ interface helper {
     }
 }
 
-type Job = {
+export type Job = {
     name: string,
     running: boolean,
     start: Date,
@@ -40,8 +40,8 @@ export type Worker = {
 export type FetcherReturn = {
     listWorkers: () => Promise<Worker[]>,
     listJobs: ({ auth_token }: { auth_token: string }) =>
-        Promise<{ [key: string]: Job }>,
-    listJobsHistory: ({ auth_token }: { auth_token: string }) =>
+        Promise<[string]>,
+    listJobHistory: ({ auth_token, group }: { auth_token: string, group: string }) =>
         Promise<Job[]>,
     listGroups: ({ auth_token }: { auth_token: string }) =>
         Promise<{
@@ -129,8 +129,8 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
             const j = await helper({ baseUrl, auth_token, suffixUrl: '/jobs/' })
             return j.jobs
         },
-        listJobsHistory: async ({ auth_token }: { auth_token: string }) => {
-            const j = await helper({ baseUrl, auth_token, suffixUrl: '/jobs/' })
+        listJobHistory: async ({ auth_token, group }: { auth_token: string, group: string }) => {
+            const j = await helper({ baseUrl, auth_token, suffixUrl: `/jobs/${group}` })
             return j.history
         },
         listGroups: async ({ auth_token }: { auth_token: string }) => {
@@ -246,8 +246,14 @@ export function MockFetcher(): FetcherReturn {
     const groups: string[] = ['g1', 'g2', 'g3']
     const members: { [key: string]: string[] } = { g1: ['u1', 'u2'], g2: ['u2'] }
     const subscriptions: { [key: string]: string[] } = { u1: ['g1'], u2: ['g1', 'g2'] }
-    const jobs: { [key: string]: Job } = {}
-    const jobsHistory: Job[] = []
+    const jobs: [string] = ['g1']
+    const jobsHistory: Job[] = [{
+        name: 'g1',
+        running: false,
+        start: new Date(),
+        end: new Date(),
+        output: 'finished\n',
+    }]
     const workers: Worker[] = [
         {
             host_ip: '1.2.3.4',
@@ -284,7 +290,7 @@ export function MockFetcher(): FetcherReturn {
     return {
         listWorkers: async () => workers,
         listJobs: async () => jobs,
-        listJobsHistory: async () => jobsHistory,
+        listJobHistory: async () => jobsHistory,
         listUsers: async () => {
             return { users: [...users] }
         },

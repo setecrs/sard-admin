@@ -13,6 +13,7 @@ test('GroupView renders', async () => {
     myUsers={[]}
     selectedGroup={''}
     setSelectedGroup={() => { }}
+    listJobHistory={async () => []} 
   />);
   await wait(() => {
     expect(baseElement).toBeDefined()
