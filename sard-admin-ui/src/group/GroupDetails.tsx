@@ -93,7 +93,7 @@ export function GroupDetails({
                     return <li key={i}>
                         Running: {JSON.stringify(j.running)}
                         <br />
-                        Start: toDate(j.start)}
+                        Start: {toDate(j.start)}
                         <br />
                         End: {toDate(j.end)}
                         <br />
