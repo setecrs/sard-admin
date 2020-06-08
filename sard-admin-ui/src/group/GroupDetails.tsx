@@ -23,14 +23,20 @@ export function GroupDetails({
     const [selectedUser, setSelectedUser] = useState('')
     const [refreshing, setRefreshing] = useState(false)
     const [jobs, setJobs] = useState<Job[]>([])
+    const [refreshingHistory, setRefreshingHistory] = useState(false)
+
+    const updateHistory = async () => {
+        setRefreshingHistory(true)
+        const lh = listJobHistory({ group })
+        setJobs(await lh)
+        setRefreshingHistory(false)
+    }
 
     useEffect(() => {
         (async () => {
+            updateHistory()
             setRefreshing(true)
-            const lm = listMembers({ group })
-            const lh = listJobHistory({ group })
-            setJobs(await lh)
-            await lm
+            await listMembers({ group })
             setRefreshing(false)
         })()
     }, [group])
@@ -70,18 +76,26 @@ export function GroupDetails({
         <div className="row p-3">
             <button
                 className="button btn btn-primary"
-                onClick={() => fixPermissions({ group })}
+                onClick={() => {
+                    fixPermissions({ group })
+                    updateHistory()
+                }}
             >Fix group directory permissions</button>
         </div>
-        {(jobs) ?
+        {(refreshingHistory)?'refreshing':''}
+        {(jobs && jobs.length > 0) ?
             <ul> <h5>Group permission jobs:</h5>
+                <button
+                    className="button btn btn-primary"
+                    onClick={() => updateHistory()}
+                >Update</button>
                 {jobs.map((j, i) => {
                     return <li key={i}>
                         Running: {JSON.stringify(j.running)}
                         <br />
-                        Start: {j.start.toISOString()}
+                        Start: {JSON.stringify(j.start)}
                         <br />
-                        End: {j.end.toISOString()}
+                        End: {JSON.stringify(j.end)}
                         <br />
                         Output: <pre>{j.output}</pre>
                     </li>
