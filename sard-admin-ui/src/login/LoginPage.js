@@ -28,7 +28,7 @@ export function Login({ login }) {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
 
-    return <Fragment>
+    return <form>
         <div>
             <input
                 placeholder='user'
@@ -50,6 +50,7 @@ export function Login({ login }) {
         </div>
         <div>
             <button
+                type="submit"
                 className="btn btn-success"
                 onClick={() => {
                     login({ user, password })
@@ -61,7 +62,7 @@ export function Login({ login }) {
             </button>
 
         </div>
-    </Fragment>
+    </form>
 }
 
 LoginPage.propTypes = {
