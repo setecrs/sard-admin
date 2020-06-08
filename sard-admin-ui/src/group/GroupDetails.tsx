@@ -82,7 +82,7 @@ export function GroupDetails({
                 }}
             >Fix group directory permissions</button>
         </div>
-        {(refreshingHistory)?'refreshing':''}
+        {(refreshingHistory) ? 'refreshing' : ''}
         {(jobs && jobs.length > 0) ?
             <ul> <h5>Group permission jobs:</h5>
                 <button
@@ -93,9 +93,9 @@ export function GroupDetails({
                     return <li key={i}>
                         Running: {JSON.stringify(j.running)}
                         <br />
-                        Start: {JSON.stringify(j.start)}
+                        Start: toDate(j.start)}
                         <br />
-                        End: {JSON.stringify(j.end)}
+                        End: {toDate(j.end)}
                         <br />
                         Output: <pre>{j.output}</pre>
                     </li>
@@ -104,4 +104,16 @@ export function GroupDetails({
             : ''
         }
     </Fragment>
+}
+
+function toDate(d: Date) {
+    try {
+        return JSON.stringify(new Date(d))
+    } catch (error) {
+    }
+    try {
+        return JSON.stringify(new Date(Number(d) * 1000))
+    } catch (error) {
+    }
+    return JSON.stringify(d)
 }
