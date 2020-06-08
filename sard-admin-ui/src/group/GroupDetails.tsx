@@ -76,8 +76,8 @@ export function GroupDetails({
         <div className="row p-3">
             <button
                 className="button btn btn-primary"
-                onClick={() => {
-                    fixPermissions({ group })
+                onClick={async () => {
+                    await fixPermissions({ group })
                     updateHistory()
                 }}
             >Fix group directory permissions</button>
