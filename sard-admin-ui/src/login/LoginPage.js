@@ -28,7 +28,14 @@ export function Login({ login }) {
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
 
-    return <form>
+    return <form
+        onSubmit={(e) => {
+            login({ user, password })
+            setUser('')
+            setPassword('')
+            e.preventDefault()
+        }}
+    >
         <div>
             <input
                 placeholder='user'
@@ -52,11 +59,6 @@ export function Login({ login }) {
             <button
                 type="submit"
                 className="btn btn-success"
-                onClick={() => {
-                    login({ user, password })
-                    setUser('')
-                    setPassword('')
-                }}
             >
                 Login
             </button>
