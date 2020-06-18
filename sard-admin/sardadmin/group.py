@@ -79,7 +79,7 @@ class Group:
             for dirpath, dirnames, filenames in os.walk(myroot):
                 for x in dirnames:
                     xpath = os.path.join(dirpath, x)
-                    os.chown(myroot, 0, gid, follow_symlinks=False)
+                    os.chown(xpath, 0, gid, follow_symlinks=False)
                     #Inner folders are always 575
                     oldmode = os.stat(xpath, follow_symlinks=False).st_mode
                     oldmode = oldmode & 0o777 # consider only lower bits
