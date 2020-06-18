@@ -117,7 +117,7 @@ class GroupTest(unittest.TestCase):
         self.wait_history()
 
         for d in dirs:
-            self.assertEqual(os.stat(d).st_mode, 0o40555, d)
+            self.assertEqual(os.stat(d).st_mode, 0o40777, d)
         for f in files:
             self.assertEqual(os.stat(f).st_mode, 0o100444, f)
         for d in [

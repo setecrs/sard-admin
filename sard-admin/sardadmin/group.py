@@ -78,12 +78,13 @@ class Group:
             os.chmod(myroot, 0o070)
             for dirpath, dirnames, filenames in os.walk(myroot):
                 for x in dirnames:
-                    #Inner folders are always readable and executable.
+                    #Inner folders are always readable, writeable, and executable.
                     xpath = os.path.join(dirpath, x)
                     oldmode = os.stat(xpath, follow_symlinks=False).st_mode
                     oldmode = oldmode & 0o777 # consider only lower bits
                     newmode = oldmode
                     newmode = newmode | 0o444 # everybody can read
+                    newmode = newmode | 0o222 # everybody can write
                     newmode = newmode | 0o111 # everybody can execute
                     if oldmode != newmode:
                         os.chmod(xpath, newmode)
