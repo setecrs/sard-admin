@@ -20,8 +20,8 @@ interface helper {
 export type Job = {
     name: string,
     running: boolean,
-    start: Number,
-    end: Number,
+    start: Date,
+    end: Date,
     output: string,
 }
 
