@@ -67,10 +67,14 @@ class Group:
     def permissions(self):
         """Adjusts the group folder permissions.
         The main group folder is only accessible by group members.
-        Inner folders are always readable and executable.
+        Inner folders use mode 775.
         Inner files are always readable. Some are executable too."""
         group_root = '/operacoes'
         def f():
+            g(skipSard=True)
+            g(skipSard=False)
+
+        def g(skipSard):
             gid = self.gid()
             myroot = os.path.join(group_root, self.name)
             #The main group folder is only accessible by group members.
@@ -79,27 +83,42 @@ class Group:
             for dirpath, dirnames, filenames in os.walk(myroot):
                 for x in dirnames:
                     xpath = os.path.join(dirpath, x)
-                    os.chown(xpath, 0, gid, follow_symlinks=False)
-                    #Inner folders are always 575
-                    oldmode = os.stat(xpath, follow_symlinks=False).st_mode
-                    oldmode = oldmode & 0o777 # consider only lower bits
-                    newmode = 0o775
-                    if oldmode != newmode:
-                        os.chmod(xpath, newmode)
-                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
+                    msg = fixdir(xpath, 0, gid)
+                    if msg:
+                        Group.jobs[self.name]['output'] += msg
+                    if x=='SARD' and skipSard:
+                        dirnames.remove('SARD')
                 for x in filenames:
-                    #Inner files are always readable. Some are executable too.
                     xpath = os.path.join(dirpath, x)
-                    oldmode = os.stat(xpath, follow_symlinks=False).st_mode
-                    oldmode = oldmode & 0o777 # consider only lower bits
-                    newmode = oldmode
-                    newmode = newmode | 0o444 # everybody can read
-                    if  ('indexador/tools' in dirpath or
-                         'indexador/jre/bin' in dirpath or
-                         'indexador/lib' in dirpath or
-                         x.endswith('.exe')):
-                        newmode = newmode | 0o111 # everybody can execute
-                    if oldmode != newmode:
-                        os.chmod(xpath, newmode)
-                        Group.jobs[self.name]['output'] += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
+                    msg = fixfile(xpath)
+                    if msg:
+                        Group.jobs[self.name]['output'] += msg
         addJob(Group.jobs, self.name, Group.history, f, self.history_timeout)
+
+def fixdir(xpath, uid, gid):
+    msg = ''
+    oldstat = os.stat(xpath, follow_symlinks=False)
+    os.chown(xpath, uid, gid, follow_symlinks=False)
+    if oldstat.st_uid != uid or oldstat.st_gid != gid:
+        msg += f'chown {uid}:{gid} path: {xpath}\n'
+    oldmode = oldstat.st_mode
+    oldmode = oldmode & 0o777 # consider only lower bits
+    newmode = 0o775
+    if oldmode != newmode:
+        os.chmod(xpath, newmode)
+        msg += f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
+    return msg
+
+def fixfile(xpath):
+    oldmode = os.stat(xpath, follow_symlinks=False).st_mode
+    oldmode = oldmode & 0o777 # consider only lower bits
+    newmode = oldmode
+    newmode = newmode | 0o444 # everybody can read
+    if  ('indexador/tools' in xpath or
+            'indexador/jre/bin' in xpath or
+            'indexador/lib' in xpath or
+            xpath.endswith('.exe')):
+        newmode = newmode | 0o111 # everybody can execute
+    if oldmode != newmode:
+        os.chmod(xpath, newmode)
+        return f'oldmode: {oct(oldmode)} newmode: {oct(newmode)} path: {xpath}\n'
