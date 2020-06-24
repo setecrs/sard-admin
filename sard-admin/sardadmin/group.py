@@ -55,7 +55,7 @@ class Group:
             raise Exception('Group already exists')
         op = self.name
         compl = run(['smbldap-groupadd', '-a', op], stdout=PIPE, check=True)
-        os.makedirs(f'/operacoes/{op}', mode=0o770, exist_ok=True)
+        os.makedirs(f'/operacoes/{op}', mode=0o070, exist_ok=True)
         self.permissions()
 
     def delete(self):
