@@ -21,3 +21,12 @@ It also does permisisons management and make adjustements to the user's home fol
     python3 -m pip install .
     export FLASK_APP=sardadmin
     flask run
+
+## system-tests
+
+System tests require docker-compose. They can be run using:
+
+    cd tests/
+    ./system-tests.sh
+
+This will create a local ldap server, a web API, and use them to run tests that perform LDAP and filesystem changes on the test environment.
