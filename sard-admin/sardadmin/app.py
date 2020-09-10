@@ -31,7 +31,7 @@ def create_app(ldap_server=None, jwt_secret=None):
 
 def env2dict(env: str):
     result = {}
-    for line in env2dict.split('\n'):
+    for line in env.split('\n'):
         line = line.strip
         if not line:
             continue
