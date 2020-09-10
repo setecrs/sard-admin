@@ -25,7 +25,7 @@ class K8s:
         resp = client.CoreV1Api().list_namespaced_pod(self.namespace)
         return _listWorkers(resp)
 
-    def addJob(self, image, evidence, env):
+    def addJob(self, image, IPEDJAR, EVIDENCE_PATH, OUTPUT_PATH, IPED_PROFILE, ADD_ARGS, ADD_PATHS, **env):
         job = yaml.safe_load(f"""---
 apiVersion: batch/v1
 kind: Job
@@ -66,14 +66,22 @@ spec:
               path: /readiness
               port: http
           env:
-          - name: IPEDJAR
-            value: /root/IPED/iped/iped.jar
           - name: LOCK_URL
             value: http://$(LOCKER_SERVICE_HOST):$(LOCKER_SERVICE_PORT)
           - name: NOTIFY_URL
             value: http://$(WEKAN_NOTIFIER_SERVICE_HOST):$(WEKAN_NOTIFIER_SERVICE_PORT)
-          - name: EVIDENCE_PATH
-            value: {evidence}
+    	  - name: IPEDJAR
+            value: {IPEDJAR}
+    	  - name: EVIDENCE_PATH
+            value: {EVIDENCE_PATH}
+    	  - name: OUTPUT_PATH
+            value: {OUTPUT_PATH}
+    	  - name: IPED_PROFILE
+            value: {IPED_PROFILE}
+    	  - name: ADD_ARGS
+            value: {ADD_ARGS}
+    	  - name: ADD_PATHS
+            value: {ADD_PATHS}
           volumeMounts:
             - mountPath: /mnt/ipedtmp
               name: ipedtmp

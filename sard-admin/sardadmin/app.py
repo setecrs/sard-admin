@@ -29,11 +29,60 @@ def create_app(ldap_server=None, jwt_secret=None):
     return _create_app(auth, User, Group)
 
 
+def env2dict(env: str):
+    result = {}
+    for line in env2dict.split('\n'):
+        line = line.strip
+        if not line:
+            continue
+        k, v = line.split('=', 1)
+        dict[k] = v
+    return result
+
+
 def _create_app(auth, User, Group):
     app = Flask(__name__)  # Create a Flask WSGI appliction
     api = Api(app)  # Create a Flask-RESTPlus API
     check_request = CheckRequest(auth, User, Group)
     log = logging.getLogger(__name__)
+
+    @api.route('/iped/')
+    class Iped(Resource):
+        @api.representation('text/plain')
+        @api.expect(api.model('ipedParameters', {
+            "image": fields.String(required=True, description='docker image'),
+            "IPEDJAR": fields.String(required=True, description='path to the IPED.jar file'),
+            "EVIDENCE_PATH": fields.String(required=True, description='path to a datasource, to create a single job'),
+            "OUTPUT_PATH": fields.String(required=True, description='IPED output folder'),
+            "IPED_PROFILE": fields.String(required=True, description='IPED profile'),
+            "ADD_ARGS": fields.String(required=True, description='extra arguments to IPED'),
+            "ADD_PATHS": fields.String(required=True, description='extra source paths to IPED'),
+            "env": fields.String(required=True, description='extra envirnoment variables, one by line'),
+        }))
+        def post(self):
+            """Create a new kubernetes job to run IPED"""
+            try:
+                image = api.payload['image']
+                IPEDJAR = api.payload['IPEDJAR']
+                EVIDENCE_PATH = api.payload['EVIDENCE_PATH']
+                OUTPUT_PATH = api.payload['OUTPUT_PATH']
+                IPED_PROFILE = api.payload['IPED_PROFILE']
+                ADD_ARGS = api.payload['ADD_ARGS']
+                ADD_PATHS = api.payload['ADD_PATHS']
+                env = api.payload['env']
+            except:
+                raise BadRequest('missing parameters')
+            try:
+                check_request.check_admin(request)
+            except:
+                return make_response('Unauthorized', http.HTTPStatus.UNAUTHORIZED)
+            try:
+                env = env2dict(env)
+                return K8s().addJob(image, IPEDJAR, EVIDENCE_PATH, OUTPUT_PATH, IPED_PROFILE, ADD_ARGS, ADD_PATHS, **env)
+            except Exception as e:
+                if DEBUG:
+                    log.exception(e)
+                raise BadRequest(dict(error=str(e)))
 
     @api.route('/jobs/')
     class Jobs(Resource):
@@ -41,6 +90,7 @@ def _create_app(auth, User, Group):
             return {
                 "jobs": [op for op in Group.jobs],
             }
+
     @api.route('/jobs/<string:job>')
     class GetJob(Resource):
         def get(self, job):
@@ -264,7 +314,7 @@ def _create_app(auth, User, Group):
                 result = []
                 workers = K8s().listWorkers()
                 for w in workers:
-                    x=dict(
+                    x = dict(
                         name=w.name,
                         pod_ip=w.pod_ip,
                         host_ip=w.host_ip,
@@ -275,7 +325,7 @@ def _create_app(auth, User, Group):
                     try:
                         if not w.ready:
                             mdata = getMetrics(w.pod_ip)
-                            x['evidence'] = mdata.evidence 
+                            x['evidence'] = mdata.evidence
                             x['processed'] = mdata.processed
                             x['found'] = mdata.found
                     except:
