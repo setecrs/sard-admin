@@ -5,6 +5,7 @@ import NavList from './elements/NavList';
 import { UsersPage } from './user/UsersPage';
 import { GroupPage } from './group/GroupPage'
 import { LoginPage } from './login/LoginPage'
+import { LaunchPage } from './launch/LaunchPage'
 import { initialState, reducer } from './data/state'
 import { Actions } from './data/actions'
 import { FetcherReturn } from './data/fetcher';
@@ -84,13 +85,36 @@ function App({ fetcher, cardFetcher, lockFetcher }: { fetcher: FetcherReturn, ca
 
   const processingPage = <ProcessingPage fetcher={fetcher} card_fetcher={cardFetcher} lockFetcher={lockFetcher} />
 
+  const launchPage = <LaunchPage iped={async ({
+    image,
+    IPEDJAR,
+    EVIDENCE_PATH,
+    OUTPUT_PATH,
+    IPED_PROFILE,
+    ADD_ARGS,
+    ADD_PATHS,
+    env,
+  }) => actions.iped({
+    auth_token: state.auth_token,
+    image,
+    IPEDJAR,
+    EVIDENCE_PATH,
+    OUTPUT_PATH,
+    IPED_PROFILE,
+    ADD_ARGS,
+    ADD_PATHS,
+    env,
+  })}
+  />
+
   const tabs = [
     {
       title: <Fragment>{state.auth_token ? state.login : 'Login'}</Fragment>, element: loginPage
     },
     { title: "Users", element: usersPage },
     { title: "Groups", element: groupPage },
-    { title: "Processing", element: processingPage }
+    { title: "Processing", element: processingPage },
+    { title: "Launch IPED", element: launchPage },
   ]
 
   const navBar = NavList({

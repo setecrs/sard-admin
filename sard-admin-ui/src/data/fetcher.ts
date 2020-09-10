@@ -38,6 +38,27 @@ export type Worker = {
 }
 
 export type FetcherReturn = {
+    iped:({
+        auth_token,
+        image,
+        IPEDJAR,
+        EVIDENCE_PATH,
+        OUTPUT_PATH,
+        IPED_PROFILE,
+        ADD_ARGS,
+        ADD_PATHS,
+        env,
+      }:{
+        auth_token: string,
+        image: string,
+        IPEDJAR: string,
+        EVIDENCE_PATH: string,
+        OUTPUT_PATH: string,
+        IPED_PROFILE: string,
+        ADD_ARGS: string,
+        ADD_PATHS: string,
+        env: string,
+      }) => Promise<void>,
     listWorkers: () => Promise<Worker[]>,
     listJobs: ({ auth_token }: { auth_token: string }) =>
         Promise<[string]>,
@@ -121,6 +142,34 @@ export function Fetcher({ baseUrl }: { baseUrl: string }): FetcherReturn {
         return j
     }
     return {
+        iped: async ({
+            auth_token,
+            image,
+            IPEDJAR,
+            EVIDENCE_PATH,
+            OUTPUT_PATH,
+            IPED_PROFILE,
+            ADD_ARGS,
+            ADD_PATHS,
+            env,
+          }) => {
+            await helperNoJson({
+                baseUrl, auth_token, suffixUrl: `/iped/`, options: {
+                    method: 'POST',
+                    headers: new Headers({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({
+                        image,
+                        IPEDJAR,
+                        EVIDENCE_PATH,
+                        OUTPUT_PATH,
+                        IPED_PROFILE,
+                        ADD_ARGS,
+                        ADD_PATHS,
+                        env,
+                    }),
+                }
+            })
+        },
         listWorkers: async () => {
             const j = await helper({ baseUrl, suffixUrl: '/workers/' })
             return j
@@ -288,6 +337,8 @@ export function MockFetcher(): FetcherReturn {
     ]
     let restart_counter = 0
     return {
+        iped: async (job) => {
+        },
         listWorkers: async () => workers,
         listJobs: async () => jobs,
         listJobHistory: async () => jobsHistory,

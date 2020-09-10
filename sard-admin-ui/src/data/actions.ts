@@ -62,6 +62,14 @@ export function Actions({ fetcher, dispatch }: { fetcher: FetcherReturn, dispatc
                 dispatch({ type: 'error', payload: e })
             }
         },
+        iped: async (params: Parameters<FetcherReturn["iped"]>[0]) => {
+            try {
+                await fetcher.iped(params)
+            } catch (e) {
+                console.error(e)
+                dispatch({ type: 'error', payload: e })
+            }
+        },
         listMembers: async ({ group, auth_token }: { group: string, auth_token: string }) => {
             try {
                 const payload = await fetcher.listMembers({ group, auth_token })
