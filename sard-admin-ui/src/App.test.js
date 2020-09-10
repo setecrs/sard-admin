@@ -15,7 +15,7 @@ test('#navbar has Users and Groups', async () => {
   expect(ul.childNodes[1].textContent).toBe("Users")
   expect(ul.childNodes[2].textContent).toBe("Groups")
   expect(ul.childNodes[3].textContent).toBe("Processing")
-  expect(ul.childNodes[4].textContent).toBe("Launch")
+  expect(ul.childNodes[4].textContent).toBe("Launch IPED")
 });
 
 test.todo('has list of running permissions')

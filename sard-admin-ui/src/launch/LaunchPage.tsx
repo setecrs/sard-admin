@@ -201,10 +201,11 @@ export function LaunchPage({ iped }: {
         id='env'
         rows={8}
         placeholder=''
+        value={env}
         onChange={e => {
           setenv(e.target.value)
         }}
-      >{env}</textarea>
+      />
     </div>
     <div>
       <button

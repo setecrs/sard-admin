@@ -9,5 +9,5 @@ test('GroupView renders', async () => {
   await wait(() => {
     expect(baseElement).toBeDefined()
   })
-  expect(getByText(/Launch/)).toBeDefined()
+  expect(getByText(/Launch IPED/)).toBeDefined()
 })
