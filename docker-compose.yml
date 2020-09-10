@@ -51,7 +51,7 @@ services:
     volumes:
       - ./sard-admin/:/app/
     ports:
-      - 8080:80
+      - 8082:80
     command: ['flask', 'run', '-h', '0.0.0.0', '-p', '80']
   ui:
     build: sard-admin-ui
@@ -65,6 +65,10 @@ services:
     environment:
       SARD_ADMIN_SERVICE_HOST: "api"
       SARD_ADMIN_SERVICE_PORT: 80
+      WEKAN_GRAPHQL_NOAUTH_SERVICE_HOST: "api"
+      WEKAN_GRAPHQL_NOAUTH_SERVICE_PORT: 80
+      LOCKER_SERVICE_HOST: "api"
+      LOCKER_SERVICE_PORT: 80
       LANG: "en_US.UTF-8"
     ports:
       - 8081:80
