@@ -21,6 +21,10 @@ server {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/jobs/ ;
   }
 
+  location /iped/ {
+    proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/iped/ ;
+  }
+
   location /folders/ {
     proxy_pass http://${SARD_ADMIN_SERVICE_HOST}:${SARD_ADMIN_SERVICE_PORT}/folders/ ;
   }
