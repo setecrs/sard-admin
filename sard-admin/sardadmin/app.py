@@ -35,8 +35,9 @@ def env2dict(env: str):
         line = line.strip()
         if not line:
             continue
-        k, v = line.split('=', 1)
-        dict[k] = v
+        parts = line.split('=', 1)
+        if len(parts) == 2:
+            result[parts[0]] = parts[1]
     return result
 
 
