@@ -70,17 +70,17 @@ spec:
             value: http://$(LOCKER_SERVICE_HOST):$(LOCKER_SERVICE_PORT)
           - name: NOTIFY_URL
             value: http://$(WEKAN_NOTIFIER_SERVICE_HOST):$(WEKAN_NOTIFIER_SERVICE_PORT)
-        - name: IPEDJAR
+          - name: IPEDJAR
             value: {IPEDJAR}
-        - name: EVIDENCE_PATH
+          - name: EVIDENCE_PATH
             value: {EVIDENCE_PATH}
-        - name: OUTPUT_PATH
+          - name: OUTPUT_PATH
             value: {OUTPUT_PATH}
-        - name: IPED_PROFILE
+          - name: IPED_PROFILE
             value: {IPED_PROFILE}
-        - name: ADD_ARGS
+          - name: ADD_ARGS
             value: {ADD_ARGS}
-        - name: ADD_PATHS
+          - name: ADD_PATHS
             value: {ADD_PATHS}
           volumeMounts:
             - mountPath: /mnt/ipedtmp
