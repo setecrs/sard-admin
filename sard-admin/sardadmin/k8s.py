@@ -164,7 +164,8 @@ spec:
         for k,v in env.items():
           envlist.append(dict(name=k, value=v))
         job['spec']['template']['spec']['containers'][0]['env'] += envlist
-        return client.BatchV1Api().create_namespaced_job(self.namespace, job)
+        v1job : client.V1Job = client.BatchV1Api().create_namespaced_job(self.namespace, job)
+        return v1job.metadata.name
 
 
 MetricData = namedtuple('MetricData', ['evidence', 'processed', 'found'])
