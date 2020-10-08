@@ -37,7 +37,7 @@ def env2dict(env: str):
             continue
         parts = line.split('=', 1)
         if len(parts) == 2:
-            result[parts[0]] = parts[1]
+            result[parts[0].strip()] = parts[1].strip()
     return result
 
 
