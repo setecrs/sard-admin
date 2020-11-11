@@ -15,8 +15,9 @@ class TestKubernetes(unittest.TestCase):
         self.assertListEqual(workers, [])
 
     def test_list1IpedWorker(self):
+        state = client.V1ContainerState(running=None)
         containerStatus = client.V1ContainerStatus(
-            image='image', image_id='1', name='2', ready=True, restart_count=0)
+            image='image', image_id='1', name='2', ready=True, restart_count=0, state=state)
         status = client.V1PodStatus(
             host_ip="1.2.3.4", pod_ip='6.7.8.9', container_statuses=[containerStatus])
         metadata = client.V1ObjectMeta(name='ipedworker-myname')
