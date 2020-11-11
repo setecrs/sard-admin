@@ -324,7 +324,7 @@ def _create_app(auth, User, Group):
                         image=w.image,
                     )
                     try:
-                        if not w.ready:
+                        if (not w.ready) and w.running:
                             mdata = getMetrics(w.pod_ip)
                             x['evidence'] = mdata.evidence
                             x['processed'] = mdata.processed
@@ -333,8 +333,9 @@ def _create_app(auth, User, Group):
                         pass
                     result.append(x)
                 return result
-            except:
-                return ('', http.HTTPStatus.BAD_REQUEST)
+            except Exception as e:
+                log.exception(e)
+                raise BadRequest(dict(error=str(e)))
 
     @api.route('/folders/count')
     class FoldersCount(Resource):

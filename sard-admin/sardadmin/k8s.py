@@ -12,7 +12,8 @@ IPEDWorker = namedtuple('IPEDWorker', [
     'host_ip',
     'node_name',
     'ready',
-    'image'
+    'image',
+    'running',
 ])
 
 
@@ -176,7 +177,7 @@ class MetricsException(Exception):
 
 
 def getMetrics(pod_ip, pod_port=80) -> str:
-    resp = requests.get(f"http://{pod_ip}:{pod_port}/metrics")
+    resp = requests.get(f"http://{pod_ip}:{pod_port}/metrics", timeout=1) # 1 second
     return _getMetrics(resp)
 
 
@@ -209,11 +210,14 @@ def _listWorkers(resp: client.V1PodList) -> List[IPEDWorker]:
         host_ip = status.host_ip
         node_name = item.spec.node_name
         ready = False
+        running = False
         image = ''
-        if len(status.container_statuses) == 1:
+        if (not (status.container_statuses is None)
+          and len(status.container_statuses)) == 1:
             container_status: client.V1ContainerStatus = status.container_statuses[0]
             ready = container_status.ready
             image = container_status.image
+            running = not (container_status.state.running is None)
         worker = IPEDWorker(
             name=name,
             host_ip=host_ip,
@@ -221,6 +225,7 @@ def _listWorkers(resp: client.V1PodList) -> List[IPEDWorker]:
             node_name=node_name,
             ready=ready,
             image=image,
+            running=running,
         )
         result.append(worker)
     return result
