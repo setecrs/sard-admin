@@ -20,13 +20,29 @@ export function ProcessingPage({ fetcher, card_fetcher, lockFetcher }: { fetcher
             const p_cards = card_fetcher.listProcessing()
             const p_locks = lockFetcher.getLocks()
             const p_workers = fetcher.listWorkers()
-            const _cards = await p_cards
-            const _locks = await p_locks
-            const _workers = await p_workers
-            setCards(_cards.sort((a, b) => a.id.localeCompare(b.id)))
-            setLocks(_locks.sort())
-            setWorkers(_workers.sort((a, b) => a.node_name.localeCompare(b.node_name)))
+            try {
+                const _cards = await p_cards
+                setCards(_cards.sort((a, b) => a.id.localeCompare(b.id)))
+            } catch (e) {
+                console.log({e})
+                setError("could not retrieve cards: " + e.stack)
+            }
+            try {
+                const _locks = await p_locks
+                setLocks(_locks.sort())
+            } catch (e) {
+                console.log({e})
+                setError("could not retrieve locks: " + e.stack)
+            }
+            try {
+                const _workers = await p_workers
+                setWorkers(_workers.sort((a, b) => a.node_name.localeCompare(b.node_name)))
+            } catch (e) {
+                console.log({e})
+                setError("could not retrieve workers: " + e.stack)
+            }
         } catch (e) {
+            console.log({e})
             setError(e.message)
         }
     }
