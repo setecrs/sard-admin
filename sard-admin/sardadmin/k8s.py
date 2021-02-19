@@ -190,7 +190,7 @@ def _getMetrics(resp: requests.Response) -> MetricData:
     for family in text_string_to_metric_families(resp.text):
         for sample in family.samples:
             if sample.name == 'ipedworker_runIped_running':
-                if sample.value == 1:
+                if sample.value == 1 or (not evidence):
                   evidence = sample.labels['evidence']
             if sample.name == 'ipedworker_runIped_processed':
                 processed = sample.value
